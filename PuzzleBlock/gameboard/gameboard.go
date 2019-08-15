@@ -52,6 +52,8 @@ type Block struct {
 type GameBoard struct {
 	Blocks                     [][]Block
 	Background                 *sprite.Sprite
+	LevelValue                 int
+	MaxLevelValue              int
 	NumAcross, NumDown         int
 	PlayAreaStart, PlayAreaEnd int
 	ColorR                     int
@@ -68,6 +70,12 @@ type GameBoard struct {
 	NextText                   *font.TTFString
 	DeGrayText                 *font.TTFString
 	DeGrayValueText            *font.TTFString
+	TimeSinceLastDown          float64
+	LevelFall                  bool
+	LevelFallingTime           float64
+	LevelFallingTimer          float64
+	LevelPostFallTime          float64
+	LevelPostFallTimer         float64
 	BlocksFalling              int
 	BlockFallingTime           float64
 	BlockFallingTimer          float64
@@ -75,7 +83,7 @@ type GameBoard struct {
 	BlocksFallingTimer         float64
 	GameOverTime               float64
 	GameOverTimer              float64
-	Pausing                    bool
+	GameOverPausing            bool
 	BlockScorePausing          bool
 }
 
@@ -287,6 +295,9 @@ func NewGameBoard(winWidth, winHeight, winDepth, numAcross, numDown, playAreaSta
 		false,
 		renderer)
 
+	g.LevelValue = 1
+	g.MaxLevelValue = 10
+
 	g.NumAcross = numAcross
 	g.NumDown = numDown
 	g.PlayAreaStart = playAreaStart
@@ -339,6 +350,14 @@ func NewGameBoard(winWidth, winHeight, winDepth, numAcross, numDown, playAreaSta
 		g.TextFont,
 		renderer)
 
+	g.TimeSinceLastDown = 0
+
+	g.LevelFallingTime = float64(g.MaxLevelValue * 100)
+	g.LevelFallingTimer = 0
+
+	g.LevelPostFallTime = 150
+	g.LevelPostFallTimer = 0
+
 	g.BlocksFalling = 0
 	g.BlockFallingTime = 75
 	g.BlockFallingTimer = 0
@@ -349,7 +368,7 @@ func NewGameBoard(winWidth, winHeight, winDepth, numAcross, numDown, playAreaSta
 	g.GameOverTime = 1000
 	g.GameOverTimer = 0
 
-	g.Pausing = false
+	g.GameOverPausing = false
 	g.BlockScorePausing = false
 
 	return g
@@ -362,7 +381,8 @@ func (g *GameBoard) ProccessBlockMovement(d string) {
 
 	switch d {
 	case "Y++":
-		if g.CurrentActive.Y >= 0 && g.CurrentActive.Y < g.NumDown {
+		if g.CurrentActive.Y >= 0 && g.CurrentActive.Y < g.NumDown && g.CurrentActive.Y+1 < g.NumDown &&
+			g.BlockStates[g.CurrentActive.Y+1][g.CurrentActive.X] == Empty {
 			g.CurrentActive.Y++
 		}
 	case "Y--":
@@ -371,12 +391,12 @@ func (g *GameBoard) ProccessBlockMovement(d string) {
 		}
 	case "X++":
 		if (g.CurrentActive.X >= 0 && g.CurrentActive.X < g.GameBoardToBlockStates(g.PlayAreaEnd)) &&
-			g.BlockStates[g.CurrentActive.Y][g.CurrentActive.X+1] != Inactive {
+			g.BlockStates[g.CurrentActive.Y][g.CurrentActive.X+1] == Empty {
 			g.CurrentActive.X++
 		}
 	case "X--":
 		if (g.CurrentActive.X > 0 && g.CurrentActive.X <= g.GameBoardToBlockStates(g.PlayAreaEnd)) &&
-			g.BlockStates[g.CurrentActive.Y][g.CurrentActive.X-1] != Inactive {
+			g.BlockStates[g.CurrentActive.Y][g.CurrentActive.X-1] == Empty {
 			g.CurrentActive.X--
 		}
 	default:
@@ -400,7 +420,7 @@ func (g *GameBoard) ProccessBlockMovement(d string) {
 
 // MoveActiveBlock changes around the game map based on the user pressed key
 func (g *GameBoard) MoveActiveBlock(d string) {
-	if g.Pausing == false {
+	if g.GameOverPausing == false {
 		switch d {
 		case "up":
 			//fmt.Println("up")
@@ -408,6 +428,7 @@ func (g *GameBoard) MoveActiveBlock(d string) {
 		case "down":
 			//fmt.Println("down")
 			g.ProccessBlockMovement("Y++")
+			g.TimeSinceLastDown = 0
 		case "left":
 			//fmt.Println("left")
 			g.ProccessBlockMovement("X--")
@@ -544,6 +565,34 @@ func (g *GameBoard) Update(time float64) {
 	// Update the background image
 	g.Background.Update(time)
 
+	// Update the time since the last time the down key was pressed
+	if g.TimeSinceLastDown >= g.LevelFallingTime {
+		g.TimeSinceLastDown = 0
+	} else {
+		g.TimeSinceLastDown += time
+	}
+
+	// Move the current block down at a rate equal to the games current level
+	if g.LevelFall == false && (g.LevelFallingTimer-g.TimeSinceLastDown) >= g.LevelFallingTime {
+		g.MoveActiveBlock("down")
+		g.LevelFall = true
+		g.LevelFallingTimer = 0
+	} else if g.LevelFall == false && (g.LevelFallingTimer-g.TimeSinceLastDown) < g.LevelFallingTime {
+		if g.MaxLevelValue-g.LevelValue == 0 {
+			g.LevelFallingTimer += 2 * time
+		} else {
+			g.LevelFallingTimer += time + (time / float64(g.MaxLevelValue-g.LevelValue))
+		}
+	}
+
+	// Make sure there is a 'time buffer' between the last time we pressed 'down' and the next time the active block automatically falls
+	if g.LevelFall == true && g.LevelPostFallTimer >= g.LevelPostFallTime {
+		g.LevelFall = false
+		g.LevelPostFallTimer = 0
+	} else if g.LevelFall == true && g.LevelPostFallTimer < g.LevelPostFallTime {
+		g.LevelPostFallTimer += time
+	}
+
 	// Stop the downward descent of the current block
 	if g.CurrentActive.Y == g.NumDown-1 || ((g.CurrentActive.X != -1 && g.CurrentActive.Y != -1) && g.BlockStates[g.CurrentActive.Y+1][g.CurrentActive.X] == Inactive) {
 		g.BlockStates[g.CurrentActive.Y][g.CurrentActive.X] = Inactive
@@ -564,7 +613,7 @@ func (g *GameBoard) Update(time float64) {
 	// TODO: add 'game over' state/ screen and transition to that instead of resetting everything
 	for k := range currentYCount {
 		if currentYCount[k] >= g.NumDown {
-			g.Pausing = true
+			g.GameOverPausing = true
 			if g.GameOverTimer >= g.GameOverTime {
 				for j := range g.BlockStates {
 					for i := range g.BlockStates[j] {
@@ -574,7 +623,7 @@ func (g *GameBoard) Update(time float64) {
 				}
 				g.CurrentActive = Pos{-1, -1}
 				g.GameOverTimer = 0
-				g.Pausing = false
+				g.GameOverPausing = false
 				break
 			} else {
 				g.GameOverTimer += time

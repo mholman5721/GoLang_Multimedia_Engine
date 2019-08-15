@@ -68,46 +68,12 @@ type SpriteButton struct {
 	H               int32
 }
 
-// NewSpriteButton is a 'constructor' for an ImageButton struct
+// NewSpriteButton is a 'constructor' for an SpriteButton struct
 func NewSpriteButton(path string, backgroundColor, animBackgroundColor, selectedColor sdl.Color, pos vec3.Vector3, borderPct float32, animSpeedMS, w, h int, scaleX, scaleY float64, renderer *sdl.Renderer) *SpriteButton {
-	backgroundTex, err := renderer.CreateTexture(sdl.PIXELFORMAT_ABGR8888, sdl.TEXTUREACCESS_STATIC, 1, 1)
-	if err != nil {
-		panic("ERROR: NewTextButton backgroundTex texture not created correctly...")
-	}
-	backgroundTex.SetBlendMode(sdl.BLENDMODE_BLEND)
 
-	backgroundPixels := make([]byte, 4)
-	backgroundPixels[0] = backgroundColor.R
-	backgroundPixels[1] = backgroundColor.G
-	backgroundPixels[2] = backgroundColor.B
-	backgroundPixels[3] = backgroundColor.A
-	backgroundTex.Update(nil, backgroundPixels, 4)
-
-	animTex, err := renderer.CreateTexture(sdl.PIXELFORMAT_ABGR8888, sdl.TEXTUREACCESS_STATIC, 1, 1)
-	if err != nil {
-		panic("ERROR: NewTextButton animTex texture not created correctly...")
-	}
-	animTex.SetBlendMode(sdl.BLENDMODE_BLEND)
-
-	animPixels := make([]byte, 4)
-	animPixels[0] = animBackgroundColor.R
-	animPixels[1] = animBackgroundColor.G
-	animPixels[2] = animBackgroundColor.B
-	animPixels[3] = animBackgroundColor.A
-	animTex.Update(nil, animPixels, 4)
-
-	selectedTex, err := renderer.CreateTexture(sdl.PIXELFORMAT_ABGR8888, sdl.TEXTUREACCESS_STATIC, 1, 1)
-	if err != nil {
-		panic("ERROR: NewTextButton selectedTex texture not created correctly...")
-	}
-	selectedTex.SetBlendMode(sdl.BLENDMODE_BLEND)
-
-	selectedPixels := make([]byte, 4)
-	selectedPixels[0] = selectedColor.R
-	selectedPixels[1] = selectedColor.G
-	selectedPixels[2] = selectedColor.B
-	selectedPixels[3] = selectedColor.A
-	selectedTex.Update(nil, selectedPixels, 4)
+	backgroundTex := CreateSinglePixelTexture(backgroundColor, renderer)
+	animTex := CreateSinglePixelTexture(animBackgroundColor, renderer)
+	selectedTex := CreateSinglePixelTexture(selectedColor, renderer)
 
 	sprite := sprite.NewSprite(path,
 		pos,
@@ -139,8 +105,8 @@ func NewSpriteButton(path string, backgroundColor, animBackgroundColor, selected
 // Update updates whether the button was clicked or not
 func (button *SpriteButton) Update(mouseState *MouseState, time float64) {
 	if button.Rect.HasIntersection(&sdl.Rect{X: int32(mouseState.X), Y: int32(mouseState.Y), W: 1, H: 1}) {
-		button.WasLeftClicked = mouseState.PrevLeftButton && !mouseState.LeftButton
-		button.WasRightClicked = mouseState.PrevRightButton && !mouseState.RightButton
+		button.WasLeftClicked = !mouseState.PrevLeftButton && mouseState.LeftButton
+		button.WasRightClicked = !mouseState.PrevRightButton && mouseState.RightButton
 		button.IsSelected = true
 	} else {
 		button.WasLeftClicked = false
@@ -202,46 +168,12 @@ type TextButton struct {
 	H               int32
 }
 
-// NewTextButton is a 'constructor' for an ImageButton struct
+// NewTextButton is a 'constructor' for a TextButton struct
 func NewTextButton(stringText string, size font.TextSize, textColor, backgroundColor, animBackgroundColor, selectedColor sdl.Color, pos vec3.Vector3, borderPct float32, animSpeedMS int, textFont *font.TTFFont, renderer *sdl.Renderer) *TextButton {
-	backgroundTex, err := renderer.CreateTexture(sdl.PIXELFORMAT_ABGR8888, sdl.TEXTUREACCESS_STATIC, 1, 1)
-	if err != nil {
-		panic("ERROR: NewTextButton backgroundTex texture not created correctly...")
-	}
-	backgroundTex.SetBlendMode(sdl.BLENDMODE_BLEND)
 
-	backgroundPixels := make([]byte, 4)
-	backgroundPixels[0] = backgroundColor.R
-	backgroundPixels[1] = backgroundColor.G
-	backgroundPixels[2] = backgroundColor.B
-	backgroundPixels[3] = backgroundColor.A
-	backgroundTex.Update(nil, backgroundPixels, 4)
-
-	animTex, err := renderer.CreateTexture(sdl.PIXELFORMAT_ABGR8888, sdl.TEXTUREACCESS_STATIC, 1, 1)
-	if err != nil {
-		panic("ERROR: NewTextButton animTex texture not created correctly...")
-	}
-	animTex.SetBlendMode(sdl.BLENDMODE_BLEND)
-
-	animPixels := make([]byte, 4)
-	animPixels[0] = animBackgroundColor.R
-	animPixels[1] = animBackgroundColor.G
-	animPixels[2] = animBackgroundColor.B
-	animPixels[3] = animBackgroundColor.A
-	animTex.Update(nil, animPixels, 4)
-
-	selectedTex, err := renderer.CreateTexture(sdl.PIXELFORMAT_ABGR8888, sdl.TEXTUREACCESS_STATIC, 1, 1)
-	if err != nil {
-		panic("ERROR: NewTextButton selectedTex texture not created correctly...")
-	}
-	selectedTex.SetBlendMode(sdl.BLENDMODE_BLEND)
-
-	selectedPixels := make([]byte, 4)
-	selectedPixels[0] = selectedColor.R
-	selectedPixels[1] = selectedColor.G
-	selectedPixels[2] = selectedColor.B
-	selectedPixels[3] = selectedColor.A
-	selectedTex.Update(nil, selectedPixels, 4)
+	backgroundTex := CreateSinglePixelTexture(backgroundColor, renderer)
+	animTex := CreateSinglePixelTexture(animBackgroundColor, renderer)
+	selectedTex := CreateSinglePixelTexture(selectedColor, renderer)
 
 	text := font.NewTTFString(stringText, size, textColor, pos, textFont, renderer)
 
@@ -315,19 +247,21 @@ func (button *TextButton) Draw(renderer *sdl.Renderer) {
 	button.Text.Draw(renderer)
 }
 
-// GetSinglePixelTex returns a texture consisting of a single colored pixel
-func GetSinglePixelTex(renderer *sdl.Renderer, color sdl.Color) *sdl.Texture {
+// CreateSinglePixelTexture returns a texture consisting of a single colored pixel
+func CreateSinglePixelTexture(color sdl.Color, renderer *sdl.Renderer) *sdl.Texture {
 	tex, err := renderer.CreateTexture(sdl.PIXELFORMAT_ABGR8888, sdl.TEXTUREACCESS_STATIC, 1, 1)
 	if err != nil {
 		panic(err)
 	}
+	tex.SetBlendMode(sdl.BLENDMODE_BLEND)
 
-	pixels := make([]byte, 4)
-	pixels[0] = color.R
-	pixels[1] = color.G
-	pixels[2] = color.B
-	pixels[3] = color.A
-	tex.Update(nil, pixels, 4)
+	data := make([]byte, 4)
+	data[3] = color.A
+	data[2] = color.B
+	data[1] = color.G
+	data[0] = color.R
+
+	tex.Update(nil, data, 4)
 
 	return tex
 }

@@ -68,6 +68,11 @@ type GameBoard struct {
 	NextText                   *font.TTFString
 	DeGrayText                 *font.TTFString
 	DeGrayValueText            *font.TTFString
+	BlocksFalling              int
+	BlocksFallingTime          float64
+	BlocksFallingTimer         float64
+	LevelTime                  float64
+	LevelTimer                 float64
 }
 
 // GameBoardToBlockStates translates an x coordinate in the play area to an x coordinate in the block states slice
@@ -330,6 +335,13 @@ func NewGameBoard(winWidth, winHeight, winDepth, numAcross, numDown, playAreaSta
 		g.TextFont,
 		renderer)
 
+	g.BlocksFalling = 0
+	g.BlocksFallingTime = 250
+	g.BlocksFallingTimer = 0
+
+	g.LevelTime = 1000
+	g.LevelTimer = 0
+
 	return g
 }
 
@@ -552,7 +564,10 @@ func (g *GameBoard) Update(time float64) {
 	currentYCount = nil
 
 	// Spawn a new current block at the top of the play area
-	if (g.CurrentActive.X == -1 && g.CurrentActive.Y == -1) && g.Blocks[0][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.Drawing == false {
+	if g.BlocksFalling == 0 &&
+		(g.CurrentActive.X == -1 && g.CurrentActive.Y == -1) &&
+		g.Blocks[0][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.Drawing == false {
+
 		g.CurrentActive = Pos{2, 0}
 		g.BlockStates[0][2] = Active
 		g.Blocks[0][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.CSequence = g.Blocks[2][(g.NumAcross+g.PlayAreaEnd)/2].MainSprite.CSequence
@@ -664,22 +679,44 @@ func (g *GameBoard) Update(time float64) {
 		}
 	}
 
-	// Check for falling blocks and update the ones below them
-	for j := range g.BlockStates {
-		for i := range g.BlockStates[j] {
-			if g.BlockStates[j][i] == Inactive && g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.Drawing == true {
-				if (j+1 < g.NumDown) && (g.BlockStates[j+1][i] == Empty) && (g.Blocks[j+1][g.BlockStatesToGameBoard(i)].MainSprite.Drawing == false) {
-					g.BlockStates[j][i] = Empty
-					g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.Drawing = false
-
-					g.BlockStates[j+1][i] = Inactive
-					g.Blocks[j+1][g.BlockStatesToGameBoard(i)].MainSprite.CSequence = g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.CSequence
-					g.SetBlockColoring(g.BlockStatesToGameBoard(i), j+1)
-					g.Blocks[j+1][g.BlockStatesToGameBoard(i)].MainSprite.Drawing = true
+	// Check for falling blocks
+	if g.BlocksFalling == 0 {
+		for j := range g.BlockStates {
+			for i := range g.BlockStates[j] {
+				if g.BlockStates[j][i] == Inactive && g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.Drawing == true {
+					if (j+1 < g.NumDown) && (g.BlockStates[j+1][i] == Empty) && (g.Blocks[j+1][g.BlockStatesToGameBoard(i)].MainSprite.Drawing == false) {
+						g.BlocksFalling++
+					}
 				}
 			}
 		}
 	}
+
+	// Update falling blocks and the ones below them
+	if g.BlocksFalling > 0 && g.BlocksFallingTimer >= g.BlocksFallingTime {
+		for j := range g.BlockStates {
+			for i := range g.BlockStates[j] {
+				if g.BlockStates[j][i] == Inactive && g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.Drawing == true {
+					if (j+1 < g.NumDown) && (g.BlockStates[j+1][i] == Empty) && (g.Blocks[j+1][g.BlockStatesToGameBoard(i)].MainSprite.Drawing == false) {
+						g.BlockStates[j][i] = Empty
+						g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.Drawing = false
+
+						g.BlockStates[j+1][i] = Inactive
+						g.Blocks[j+1][g.BlockStatesToGameBoard(i)].MainSprite.CSequence = g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.CSequence
+						g.SetBlockColoring(g.BlockStatesToGameBoard(i), j+1)
+						g.Blocks[j+1][g.BlockStatesToGameBoard(i)].MainSprite.Drawing = true
+
+						g.BlocksFalling--
+						g.BlocksFallingTimer = 0
+					}
+				}
+			}
+		}
+	} else if g.BlocksFalling > 0 && g.BlocksFallingTimer < g.BlocksFallingTime {
+		g.BlocksFallingTimer += time
+	}
+
+	g.BlocksFalling = 0
 
 	for j := range g.BlockStates {
 		for i := range g.BlockStates[j] {

@@ -69,10 +69,14 @@ type GameBoard struct {
 	DeGrayText                 *font.TTFString
 	DeGrayValueText            *font.TTFString
 	BlocksFalling              int
+	BlockFallingTime           float64
+	BlockFallingTimer          float64
 	BlocksFallingTime          float64
 	BlocksFallingTimer         float64
-	LevelTime                  float64
-	LevelTimer                 float64
+	GameOverTime               float64
+	GameOverTimer              float64
+	Pausing                    bool
+	BlockScorePausing          bool
 }
 
 // GameBoardToBlockStates translates an x coordinate in the play area to an x coordinate in the block states slice
@@ -336,11 +340,17 @@ func NewGameBoard(winWidth, winHeight, winDepth, numAcross, numDown, playAreaSta
 		renderer)
 
 	g.BlocksFalling = 0
-	g.BlocksFallingTime = 250
+	g.BlockFallingTime = 75
+	g.BlockFallingTimer = 0
+
+	g.BlocksFallingTime = g.BlockFallingTime * float64(g.NumDown)
 	g.BlocksFallingTimer = 0
 
-	g.LevelTime = 1000
-	g.LevelTimer = 0
+	g.GameOverTime = 1000
+	g.GameOverTimer = 0
+
+	g.Pausing = false
+	g.BlockScorePausing = false
 
 	return g
 }
@@ -390,22 +400,23 @@ func (g *GameBoard) ProccessBlockMovement(d string) {
 
 // MoveActiveBlock changes around the game map based on the user pressed key
 func (g *GameBoard) MoveActiveBlock(d string) {
-
-	switch d {
-	case "up":
-		//fmt.Println("up")
-		g.ProccessBlockMovement("Y--")
-	case "down":
-		//fmt.Println("down")
-		g.ProccessBlockMovement("Y++")
-	case "left":
-		//fmt.Println("left")
-		g.ProccessBlockMovement("X--")
-	case "right":
-		//fmt.Println("right")
-		g.ProccessBlockMovement("X++")
-	default:
-		//fmt.Println("else")
+	if g.Pausing == false {
+		switch d {
+		case "up":
+			//fmt.Println("up")
+			g.ProccessBlockMovement("Y--")
+		case "down":
+			//fmt.Println("down")
+			g.ProccessBlockMovement("Y++")
+		case "left":
+			//fmt.Println("left")
+			g.ProccessBlockMovement("X--")
+		case "right":
+			//fmt.Println("right")
+			g.ProccessBlockMovement("X++")
+		default:
+			//fmt.Println("else")
+		}
 	}
 	/*
 		for _, line := range g.BlockStates {
@@ -462,6 +473,7 @@ func (g *GameBoard) CheckScore(direction string, originalBlock, nextBlock Pos, s
 		score++
 		g.BlockStates[originalBlock.Y][originalBlock.X] = Exploding
 		g.BlockStates[nextBlock.Y][nextBlock.X] = Exploding
+
 		switch direction {
 		case "up":
 			// Not needed
@@ -489,6 +501,7 @@ func (g *GameBoard) CheckScore(direction string, originalBlock, nextBlock Pos, s
 // HandleScoreBlocks contains the logic for what should happen to blocks after they are marked by the CheckScore functions
 func (g *GameBoard) HandleScoreBlocks(score int) {
 	if score >= 3 {
+		g.BlockScorePausing = true
 		//fmt.Println("~~~~~SCORE: ", score)
 		for k := range g.BlockStates {
 			for l := range g.BlockStates[k] {
@@ -551,40 +564,24 @@ func (g *GameBoard) Update(time float64) {
 	// TODO: add 'game over' state/ screen and transition to that instead of resetting everything
 	for k := range currentYCount {
 		if currentYCount[k] >= g.NumDown {
-			for j := range g.BlockStates {
-				for i := range g.BlockStates[j] {
-					g.BlockStates[j][i] = Empty
-					g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.Drawing = false
+			g.Pausing = true
+			if g.GameOverTimer >= g.GameOverTime {
+				for j := range g.BlockStates {
+					for i := range g.BlockStates[j] {
+						g.BlockStates[j][i] = Empty
+						g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.Drawing = false
+					}
 				}
+				g.CurrentActive = Pos{-1, -1}
+				g.GameOverTimer = 0
+				g.Pausing = false
+				break
+			} else {
+				g.GameOverTimer += time
 			}
-			g.CurrentActive = Pos{-1, -1}
-			break
 		}
 	}
 	currentYCount = nil
-
-	// Spawn a new current block at the top of the play area
-	if g.BlocksFalling == 0 &&
-		(g.CurrentActive.X == -1 && g.CurrentActive.Y == -1) &&
-		g.Blocks[0][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.Drawing == false {
-
-		g.CurrentActive = Pos{2, 0}
-		g.BlockStates[0][2] = Active
-		g.Blocks[0][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.CSequence = g.Blocks[2][(g.NumAcross+g.PlayAreaEnd)/2].MainSprite.CSequence
-		g.SetBlockColoring((g.PlayAreaStart+g.PlayAreaEnd)/2, 0)
-		g.Blocks[2][(g.NumAcross+g.PlayAreaEnd)/2].MainSprite.CSequence = rand.Intn(7)
-		g.SetBlockColoring((g.NumAcross+g.PlayAreaEnd)/2, 2)
-
-		// Check if the block below the starting block is being drawn - ensure game over if it is
-		if g.Blocks[1][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.Drawing == true {
-			for g.Blocks[0][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.CSequence == 6 || g.Blocks[0][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.CSequence == g.Blocks[1][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.CSequence {
-				g.Blocks[0][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.CSequence = rand.Intn(6)
-			}
-		}
-
-		g.SetBlockColoring((g.PlayAreaStart+g.PlayAreaEnd)/2, 0)
-		g.Blocks[0][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.Drawing = true
-	}
 
 	// Update the colors of the multi-blocks
 	g.ColorTimer += time
@@ -683,17 +680,20 @@ func (g *GameBoard) Update(time float64) {
 	if g.BlocksFalling == 0 {
 		for j := range g.BlockStates {
 			for i := range g.BlockStates[j] {
-				if g.BlockStates[j][i] == Inactive && g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.Drawing == true {
-					if (j+1 < g.NumDown) && (g.BlockStates[j+1][i] == Empty) && (g.Blocks[j+1][g.BlockStatesToGameBoard(i)].MainSprite.Drawing == false) {
-						g.BlocksFalling++
-					}
+				if g.BlockStates[j][i] == Inactive &&
+					g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.Drawing == true &&
+					(j+1 < g.NumDown) && (g.BlockStates[j+1][i] == Empty) &&
+					(g.Blocks[j+1][g.BlockStatesToGameBoard(i)].MainSprite.Drawing == false) {
+
+					g.BlocksFalling++
+					//g.BlockFallPausing = true
 				}
 			}
 		}
 	}
 
 	// Update falling blocks and the ones below them
-	if g.BlocksFalling > 0 && g.BlocksFallingTimer >= g.BlocksFallingTime {
+	if g.BlocksFalling > 0 && g.BlockFallingTimer >= g.BlockFallingTime {
 		for j := range g.BlockStates {
 			for i := range g.BlockStates[j] {
 				if g.BlockStates[j][i] == Inactive && g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.Drawing == true {
@@ -707,23 +707,56 @@ func (g *GameBoard) Update(time float64) {
 						g.Blocks[j+1][g.BlockStatesToGameBoard(i)].MainSprite.Drawing = true
 
 						g.BlocksFalling--
-						g.BlocksFallingTimer = 0
+						g.BlockFallingTimer = 0
 					}
 				}
 			}
 		}
-	} else if g.BlocksFalling > 0 && g.BlocksFallingTimer < g.BlocksFallingTime {
-		g.BlocksFallingTimer += time
+	} else if g.BlocksFalling > 0 && g.BlockFallingTimer < g.BlockFallingTime {
+		g.BlockFallingTimer += time
 	}
 
 	g.BlocksFalling = 0
 
+	// Update the block falling timer
+	if g.BlockScorePausing == true && g.BlocksFallingTimer >= g.BlocksFallingTime {
+		g.BlockScorePausing = false
+		g.BlocksFallingTimer = 0
+	} else if g.BlockScorePausing == true && g.BlocksFallingTimer < g.BlocksFallingTime {
+		g.BlocksFallingTimer += time
+	}
+
+	// Make sure empty blocks are empty
 	for j := range g.BlockStates {
 		for i := range g.BlockStates[j] {
-			if g.BlockStates[j][i] == Inactive && g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.Drawing == false {
+			if g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.Drawing == false {
 				g.BlockStates[j][i] = Empty
 			}
 		}
+	}
+
+	// Spawn a new current block at the top of the play area only once all other checks are complete
+	if g.BlocksFalling == 0 &&
+		g.BlockScorePausing == false &&
+		(g.CurrentActive.X == -1 && g.CurrentActive.Y == -1) &&
+		g.Blocks[0][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.Drawing == false {
+
+		g.CurrentActive = Pos{2, 0}
+		g.BlockStates[0][2] = Active
+		g.Blocks[0][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.CSequence = g.Blocks[2][(g.NumAcross+g.PlayAreaEnd)/2].MainSprite.CSequence
+		g.SetBlockColoring((g.PlayAreaStart+g.PlayAreaEnd)/2, 0)
+		g.Blocks[2][(g.NumAcross+g.PlayAreaEnd)/2].MainSprite.CSequence = rand.Intn(7)
+		g.SetBlockColoring((g.NumAcross+g.PlayAreaEnd)/2, 2)
+
+		// Check if the block below the starting block is being drawn - ensure game over if it is
+		if g.Blocks[1][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.Drawing == true {
+			for g.Blocks[0][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.CSequence == 6 || g.Blocks[0][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.CSequence == g.Blocks[1][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.CSequence {
+				g.Blocks[0][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.CSequence = rand.Intn(6)
+			}
+		}
+
+		g.SetBlockColoring((g.PlayAreaStart+g.PlayAreaEnd)/2, 0)
+		g.Blocks[0][(g.PlayAreaStart+g.PlayAreaEnd)/2].MainSprite.Drawing = true
 	}
 
 	// Update all the blocks

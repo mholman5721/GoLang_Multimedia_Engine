@@ -175,6 +175,9 @@ func NewGameBoard(winWidth, winHeight, winDepth, numAcross, numDown, playAreaSta
 
 	g.BlockPointValue = 10
 
+	g.LevelScoreValue = 0
+	g.MaxLevelScoreValue = 100
+
 	g.NumAcross = numAcross
 	g.NumDown = numDown
 	g.PlayAreaStart = playAreaStart

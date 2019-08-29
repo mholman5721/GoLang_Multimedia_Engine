@@ -51,9 +51,6 @@ func (g *GameBoard) MoveActiveBlock(d string) {
 		case "up":
 			//fmt.Println("up")
 			//g.ProccessBlockMovement("Y--")
-			if g.LevelValue < g.MaxLevelValue {
-				g.LevelValue++
-			}
 		case "down":
 			//fmt.Println("down")
 			g.ProccessBlockMovement("Y++")

@@ -62,6 +62,8 @@ type GameBoard struct {
 	MaxDeGrayValue             int
 	PrevDeGrayValue            int
 	BlockPointValue            int
+	LevelScoreValue            int
+	MaxLevelScoreValue         int
 	NumAcross, NumDown         int
 	PlayAreaStart, PlayAreaEnd int
 	ColorR                     int
@@ -367,8 +369,24 @@ func (g *GameBoard) Update(time float64) {
 		}
 	}
 
-	// Update text
+	// Update text - change levels if level points are above the number of points to change the level
+	if g.LevelScoreValue >= g.MaxLevelScoreValue && g.LevelValue < g.MaxLevelValue {
+		g.LevelScoreValue -= g.MaxLevelScoreValue
+		g.LevelValue++
+	}
 
+	// Update text - DeGray the level if DeGray value is 0 or less
+	if g.DeGrayValue <= 0 {
+		for j := range g.BlockStates {
+			for i := range g.BlockStates[j] {
+				if g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.CSequence == 5 {
+					g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.CSequence = rand.Intn(5)
+					g.SetBlockColoring(g.BlockStatesToGameBoard(i), j)
+				}
+			}
+		}
+		g.DeGrayValue = g.MaxDeGrayValue
+	}
 }
 
 // Draw draws all the tiles in the gameboard

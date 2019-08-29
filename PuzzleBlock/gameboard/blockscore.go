@@ -92,8 +92,11 @@ func (g *GameBoard) HandleScoreBlocks(score int) {
 					if g.ScoreValue < g.MaxScoreValue {
 						if g.ScoreValue+g.BlockPointValue < g.MaxScoreValue {
 							g.ScoreValue += g.BlockPointValue
+							g.LevelScoreValue += g.BlockPointValue
+							g.DeGrayValue--
 						} else {
 							g.ScoreValue = g.MaxScoreValue
+							g.DeGrayValue--
 						}
 					}
 				}

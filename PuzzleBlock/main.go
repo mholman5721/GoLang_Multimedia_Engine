@@ -1,14 +1,9 @@
 package main
 
 import (
-	"PuzzleBlock/font"
-	"PuzzleBlock/gameboard"
-	"PuzzleBlock/guicontrols"
-	"fmt"
-	"math/rand"
-	"strconv"
+	"golang-games/PuzzleBlock/gameboard"
+	"golang-games/PuzzleBlock/guicontrols"
 	"time"
-	"vec3"
 
 	"github.com/veandco/go-sdl2/mix"
 	"github.com/veandco/go-sdl2/sdl"
@@ -60,35 +55,41 @@ func main() {
 	// Initialize input
 	initInput()
 
+	// Initialize GameState
+	//var currentGameState GameState
+	currentGameState := MainGame
+
 	// Initialize gameboard
 	g := gameboard.NewGameBoard(WinWidth, WinHeight, WinDepth, 19, 10, 7, 12, renderer)
 
 	// Test Buttons
-	textButtonFont := font.NewTTFFont("assets/FifteenTwenty-Bold.otf", WinWidth)
-	textButton := guicontrols.NewTextButton("  Hello  ",
-		font.FontLarge,
-		sdl.Color{R: 255, G: 255, B: 255, A: 255},
-		sdl.Color{R: 128, G: 128, B: 128, A: 192},
-		sdl.Color{R: 128, G: 128, B: 192, A: 192},
-		sdl.Color{R: 0, G: 0, B: 255, A: 192},
-		vec3.Vector3{X: 200, Y: 500, Z: 0},
-		0.3,
-		50,
-		textButtonFont,
-		renderer)
+	/*
+		textButtonFont := font.NewTTFFont("assets/FifteenTwenty-Bold.otf", WinWidth)
+		textButton := guicontrols.NewTextButton("  Hello  ",
+			font.FontLarge,
+			sdl.Color{R: 255, G: 255, B: 255, A: 255},
+			sdl.Color{R: 128, G: 128, B: 128, A: 192},
+			sdl.Color{R: 128, G: 128, B: 192, A: 192},
+			sdl.Color{R: 0, G: 0, B: 255, A: 192},
+			vec3.Vector3{X: 200, Y: 500, Z: 0},
+			0.3,
+			50,
+			textButtonFont,
+			renderer)
 
-	spriteButton := guicontrols.NewSpriteButton("assets/arrowLeft.png",
-		sdl.Color{R: 128, G: 128, B: 128, A: 192},
-		sdl.Color{R: 128, G: 128, B: 192, A: 192},
-		sdl.Color{R: 0, G: 0, B: 255, A: 192},
-		vec3.Vector3{X: 800, Y: 500, Z: 0},
-		0.3,
-		50,
-		64,
-		64,
-		1,
-		1,
-		renderer)
+		spriteButton := guicontrols.NewSpriteButton("assets/arrowLeft.png",
+			sdl.Color{R: 128, G: 128, B: 128, A: 192},
+			sdl.Color{R: 128, G: 128, B: 192, A: 192},
+			sdl.Color{R: 0, G: 0, B: 255, A: 192},
+			vec3.Vector3{X: 800, Y: 500, Z: 0},
+			0.3,
+			50,
+			64,
+			64,
+			1,
+			1,
+			renderer)
+	*/
 
 	mouseState := guicontrols.GetMouseState()
 
@@ -103,9 +104,6 @@ func main() {
 				fmt.Println("Mouse Down!")
 			}
 		*/
-		mouseState.Update()
-
-		getKeyboardState(g)
 
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch e := event.(type) {
@@ -122,23 +120,24 @@ func main() {
 			}
 		}
 
-		if textButton.WasLeftClicked {
-			fmt.Println("Text Clicked! " + strconv.Itoa(rand.Intn(10)))
-		}
-
 		// Clear the screen
 		renderer.Clear()
 
-		// Draw gameboard
-		g.Update(elapsedTime)
-		g.Draw(renderer)
-
-		// Draw button
-		textButton.Update(mouseState, elapsedTime)
-		textButton.Draw(renderer)
-
-		spriteButton.Update(mouseState, elapsedTime)
-		spriteButton.Draw(renderer)
+		switch currentGameState {
+		case TitleScreen:
+			// Get Mouse Input
+			mouseState.Update()
+		case OptionsScreen:
+			// Get Mouse Input
+			mouseState.Update()
+		case MainGame:
+			// Get Keyboard Input
+			getKeyboardState(g)
+			// Draw gameboard
+			g.Update(elapsedTime)
+			g.Draw(renderer)
+		default:
+		}
 
 		// Update Window Texture
 		renderer.Present()

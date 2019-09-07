@@ -1,8 +1,8 @@
 package gameboard
 
 import (
-	"PuzzleBlock/font"
-	"PuzzleBlock/sprite"
+	"golang-games/PuzzleBlock/font"
+	"golang-games/PuzzleBlock/sprite"
 	"math/rand"
 	"strconv"
 
@@ -80,7 +80,6 @@ type GameBoard struct {
 	NextText                   *font.TTFString
 	DeGrayText                 *font.TTFString
 	DeGrayValueText            *font.TTFString
-	TimeSinceLastDown          float64
 	LevelFall                  bool
 	LevelFallingTime           float64
 	LevelFallingTimer          float64
@@ -113,19 +112,12 @@ func (g *GameBoard) Update(time float64) {
 	// Update the background image
 	g.Background.Update(time)
 
-	// Update the time since the last time the down key was pressed
-	if g.TimeSinceLastDown >= g.LevelFallingTime {
-		g.TimeSinceLastDown = 0
-	} else {
-		g.TimeSinceLastDown += time
-	}
-
 	// Move the current block down at a rate equal to the games current level
-	if g.LevelFall == false && (g.LevelFallingTimer-g.TimeSinceLastDown) >= g.LevelFallingTime {
+	if g.LevelFall == false && g.LevelFallingTimer >= g.LevelFallingTime {
 		g.MoveActiveBlock("down")
 		g.LevelFall = true
 		g.LevelFallingTimer = 0
-	} else if g.LevelFall == false && (g.LevelFallingTimer-g.TimeSinceLastDown) < g.LevelFallingTime {
+	} else if g.LevelFall == false && g.LevelFallingTimer < g.LevelFallingTime {
 		g.LevelFallingTimer += time + (float64(g.LevelValue-1) * time)
 	}
 

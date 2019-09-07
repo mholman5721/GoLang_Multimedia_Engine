@@ -1,8 +1,8 @@
 package gameboard
 
 import (
-	"PuzzleBlock/font"
-	"PuzzleBlock/sprite"
+	"golang-games/PuzzleBlock/font"
+	"golang-games/PuzzleBlock/sprite"
 	"math/rand"
 	"strconv"
 	"vec3"
@@ -250,8 +250,6 @@ func NewGameBoard(winWidth, winHeight, winDepth, numAcross, numDown, playAreaSta
 		vec3.Vector3{X: g.Blocks[5][playAreaEnd+3].MainSprite.Pos.X, Y: g.Blocks[5][playAreaEnd+3].MainSprite.Pos.Y, Z: 0},
 		g.TextFont,
 		renderer)
-
-	g.TimeSinceLastDown = 0
 
 	g.LevelFallingTime = float64(g.MaxLevelValue * 100)
 	g.LevelFallingTimer = 0

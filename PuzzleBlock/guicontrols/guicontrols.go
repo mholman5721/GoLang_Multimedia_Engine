@@ -1,8 +1,8 @@
 package guicontrols
 
 import (
-	"PuzzleBlock/font"
-	"PuzzleBlock/sprite"
+	"golang-games/PuzzleBlock/font"
+	"golang-games/PuzzleBlock/sprite"
 	"vec3"
 
 	"github.com/veandco/go-sdl2/sdl"

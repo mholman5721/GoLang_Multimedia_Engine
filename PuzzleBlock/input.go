@@ -1,7 +1,7 @@
 package main
 
 import (
-	"PuzzleBlock/gameboard"
+	"golang-games/PuzzleBlock/gameboard"
 
 	"github.com/veandco/go-sdl2/sdl"
 )

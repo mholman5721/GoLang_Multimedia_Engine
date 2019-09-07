@@ -54,7 +54,7 @@ func (g *GameBoard) MoveActiveBlock(d string) {
 		case "down":
 			//fmt.Println("down")
 			g.ProccessBlockMovement("Y++")
-			g.TimeSinceLastDown = 0
+			g.LevelFallingTimer = 0
 		case "left":
 			//fmt.Println("left")
 			g.ProccessBlockMovement("X--")

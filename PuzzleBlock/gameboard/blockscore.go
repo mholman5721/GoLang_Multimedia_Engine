@@ -78,6 +78,7 @@ func (g *GameBoard) CheckScore(direction string, originalBlock, nextBlock Pos, s
 func (g *GameBoard) HandleScoreBlocks(score int) {
 	if score >= 3 {
 		g.BlockScorePausing = true
+		g.LevelFallingTimer = 0
 		//fmt.Println("~~~~~SCORE: ", score)
 		for k := range g.BlockStates {
 			for l := range g.BlockStates[k] {

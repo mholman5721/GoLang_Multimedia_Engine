@@ -151,6 +151,8 @@ func (button *SpriteButton) Draw(renderer *sdl.Renderer) {
 
 // TextButton structs contain all the information needed for a simple button with an image
 type TextButton struct {
+	WinWidth        int
+	WinHeight       int
 	Text            *font.TTFString
 	Rect            sdl.Rect
 	Background      *sdl.Texture
@@ -164,12 +166,13 @@ type TextButton struct {
 	AnimTimer       float64
 	BackgroundPos   vec3.Vector3
 	TextPos         vec3.Vector3
-	W               int32
-	H               int32
+	W               int
+	H               int
+	BorderOffset    int
 }
 
 // NewTextButton is a 'constructor' for a TextButton struct
-func NewTextButton(stringText string, size font.TextSize, textColor, backgroundColor, animBackgroundColor, selectedColor sdl.Color, pos vec3.Vector3, borderPct float32, animSpeedMS int, textFont *font.TTFFont, renderer *sdl.Renderer) *TextButton {
+func NewTextButton(winWidth, winHeight int, stringText string, size font.TextSize, textColor, backgroundColor, animBackgroundColor, selectedColor sdl.Color, pos vec3.Vector3, borderPct float32, animSpeedMS int, textFont *font.TTFFont, renderer *sdl.Renderer) *TextButton {
 
 	backgroundTex := CreateSinglePixelTexture(backgroundColor, renderer)
 	animTex := CreateSinglePixelTexture(animBackgroundColor, renderer)
@@ -182,25 +185,84 @@ func NewTextButton(stringText string, size font.TextSize, textColor, backgroundC
 		panic(err)
 	}
 
-	var borderOffset int32
+	var borderOffset int
 	switch size {
 	case font.FontSmall:
-		borderOffset = int32(float32(textFont.SizeSmall) * borderPct)
+		borderOffset = int(float32(textFont.SizeSmall) * borderPct)
 	case font.FontMedium:
-		borderOffset = int32(float32(textFont.SizeMedium) * borderPct)
+		borderOffset = int(float32(textFont.SizeMedium) * borderPct)
 	case font.FontLarge:
-		borderOffset = int32(float32(textFont.SizeLarge) * borderPct)
+		borderOffset = int(float32(textFont.SizeLarge) * borderPct)
 	default:
-		borderOffset = int32(float32(textFont.SizeSmall) * borderPct)
+		borderOffset = int(float32(textFont.SizeSmall) * borderPct)
 	}
 
-	backPos := vec3.Vector3{X: float32(int32(pos.X) - borderOffset), Y: float32(int32(pos.Y) - borderOffset), Z: 0}
+	backPos := vec3.Vector3{X: float32(pos.X - float32(borderOffset)), Y: float32(pos.Y - float32(borderOffset)), Z: 0}
 	textPos := vec3.Vector3{X: pos.X, Y: pos.Y, Z: 0}
-	width := (w + borderOffset*2)
-	height := (h + borderOffset*2)
-	rect := sdl.Rect{X: int32(backPos.X), Y: int32(backPos.Y), W: width, H: height}
+	width := int(w) + borderOffset*2
+	height := int(h) + borderOffset*2
+	rect := sdl.Rect{X: int32(backPos.X), Y: int32(backPos.Y), W: int32(width), H: int32(height)}
 
-	return &TextButton{text, rect, backgroundTex, animTex, selectedTex, false, false, false, animSpeedMS, false, 0, backPos, textPos, width, height}
+	return &TextButton{winWidth,
+		winHeight,
+		text,
+		rect,
+		backgroundTex,
+		animTex,
+		selectedTex,
+		false,
+		false,
+		false,
+		animSpeedMS,
+		false,
+		0,
+		backPos,
+		textPos,
+		width,
+		height,
+		borderOffset}
+}
+
+// SetButtonPosition sets the positions of all the components of a button
+func (button *TextButton) SetButtonPosition(pos vec3.Vector3) {
+	button.TextPos = pos
+	button.Text.Pos = button.TextPos
+	button.BackgroundPos = vec3.Vector3{X: float32(button.TextPos.X - float32(button.BorderOffset)), Y: float32(button.TextPos.Y - float32(button.BorderOffset)), Z: 0}
+	button.Rect = sdl.Rect{X: int32(button.BackgroundPos.X), Y: int32(button.BackgroundPos.Y), W: int32(button.W), H: int32(button.H)}
+}
+
+// SetCenterX sets the position to the center of the screen
+func (button *TextButton) SetCenterX() {
+
+	_, _, w, _, err := button.Text.StringTexture.Query()
+	if err != nil {
+		panic(err)
+	}
+
+	if int(w) < button.WinWidth {
+		diff := button.WinWidth - int(w)
+		button.SetButtonPosition(vec3.Vector3{X: float32(diff / 2), Y: button.TextPos.Y, Z: 0})
+	} else {
+		diff := int(w) - button.WinWidth
+		button.SetButtonPosition(vec3.Vector3{X: float32(diff / 2), Y: button.TextPos.Y, Z: 0})
+	}
+}
+
+// SetCenterY sets the position to the center of the screen
+func (button *TextButton) SetCenterY() {
+
+	_, _, _, h, err := button.Text.StringTexture.Query()
+	if err != nil {
+		panic(err)
+	}
+
+	if int(h) < button.WinHeight {
+		diff := button.H - int(h)
+		button.SetButtonPosition(vec3.Vector3{X: button.TextPos.X, Y: float32(diff / 2), Z: 0})
+	} else {
+		diff := int(h) - button.WinHeight
+		button.SetButtonPosition(vec3.Vector3{X: button.TextPos.X, Y: float32(diff / 2), Z: 0})
+	}
 }
 
 // Update updates whether the button was clicked or not

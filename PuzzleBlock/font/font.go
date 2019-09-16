@@ -17,6 +17,8 @@ const (
 	FontMedium
 	// FontLarge is for large fonts
 	FontLarge
+	// FontTitle is for title fonts
+	FontTitle
 )
 
 // TTFFont holds all the font information for TTFStrings
@@ -24,10 +26,13 @@ type TTFFont struct {
 	FontSmall  *ttf.Font
 	FontMedium *ttf.Font
 	FontLarge  *ttf.Font
-	WinWidth   int32
+	FontTitle  *ttf.Font
+	WinWidth   int
+	WinHeight  int
 	SizeSmall  int
 	SizeMedium int
 	SizeLarge  int
+	SizeTitle  int
 }
 
 // TTFString is a struct that holds everything needed to draw text to the screen
@@ -40,7 +45,7 @@ type TTFString struct {
 }
 
 // NewTTFFont Creates a new font object
-func NewTTFFont(fontLocation string, winWidth int) *TTFFont {
+func NewTTFFont(fontLocation string, winWidth, winHeight int) *TTFFont {
 
 	font := &TTFFont{}
 
@@ -67,7 +72,15 @@ func NewTTFFont(fontLocation string, winWidth int) *TTFFont {
 		panic(err)
 	}
 
-	font.WinWidth = int32(winWidth)
+	font.SizeTitle = int(float64(winWidth) * 0.15)
+
+	font.FontTitle, err = ttf.OpenFont(fontLocation, font.SizeTitle)
+	if err != nil {
+		panic(err)
+	}
+
+	font.WinWidth = winWidth
+	font.WinHeight = winHeight
 
 	return font
 }
@@ -117,6 +130,15 @@ func (s *TTFString) ChangeStringTexture(stringText string, size TextSize, color 
 		if err != nil {
 			panic(err)
 		}
+	case FontTitle:
+		fontSurface, err = s.Font.FontTitle.RenderUTF8Blended(stringText, color)
+		if err != nil {
+			panic(err)
+		}
+		backSurface, err = s.Font.FontTitle.RenderUTF8Blended(stringText, sdl.Color{R: 0, G: 0, B: 0, A: 255})
+		if err != nil {
+			panic(err)
+		}
 	default:
 		fontSurface, err = s.Font.FontSmall.RenderUTF8Blended(stringText, color)
 		if err != nil {
@@ -140,6 +162,40 @@ func (s *TTFString) ChangeStringTexture(stringText string, size TextSize, color 
 
 	s.StringTexture = tex
 	s.StringBackTexture = backTex
+}
+
+// SetCenterX sets the position to the center of the screen
+func (s *TTFString) SetCenterX() {
+
+	_, _, w, _, err := s.StringTexture.Query()
+	if err != nil {
+		panic(err)
+	}
+
+	if int(w) < s.Font.WinWidth {
+		diff := s.Font.WinWidth - int(w)
+		s.Pos.X = float32(diff / 2)
+	} else {
+		diff := int(w) - s.Font.WinWidth
+		s.Pos.X = float32(diff / 2)
+	}
+}
+
+// SetCenterY sets the position to the center of the screen
+func (s *TTFString) SetCenterY() {
+
+	_, _, _, h, err := s.StringTexture.Query()
+	if err != nil {
+		panic(err)
+	}
+
+	if int(h) < s.Font.WinHeight {
+		diff := s.Font.WinHeight - int(h)
+		s.Pos.Y = float32(diff / 2)
+	} else {
+		diff := int(h) - s.Font.WinHeight
+		s.Pos.Y = float32(diff / 2)
+	}
 }
 
 // Draw draws the text to the screen

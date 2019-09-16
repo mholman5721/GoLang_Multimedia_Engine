@@ -2,7 +2,9 @@ package main
 
 import (
 	"golang-games/PuzzleBlock/gameboard"
+	"golang-games/PuzzleBlock/gamestate"
 	"golang-games/PuzzleBlock/guicontrols"
+	"golang-games/PuzzleBlock/titlescreen"
 	"time"
 
 	"github.com/veandco/go-sdl2/mix"
@@ -55,12 +57,16 @@ func main() {
 	// Initialize input
 	initInput()
 
+	mouseState := guicontrols.GetMouseState()
+
 	// Initialize GameState
-	//var currentGameState GameState
-	currentGameState := MainGame
+	currentGameState := gamestate.TitleScreen
+
+	// Initialize titlescreen
+	t := titlescreen.NewTitleScreen(&currentGameState, mouseState, WinWidth, WinHeight, WinDepth, 10, renderer)
 
 	// Initialize gameboard
-	g := gameboard.NewGameBoard(WinWidth, WinHeight, WinDepth, 19, 10, 7, 12, renderer)
+	g := gameboard.NewGameBoard(&currentGameState, WinWidth, WinHeight, WinDepth, 19, 10, 7, 12, renderer)
 
 	// Test Buttons
 	/*
@@ -90,8 +96,6 @@ func main() {
 			1,
 			renderer)
 	*/
-
-	mouseState := guicontrols.GetMouseState()
 
 	// Main game loop
 	for {
@@ -124,18 +128,23 @@ func main() {
 		renderer.Clear()
 
 		switch currentGameState {
-		case TitleScreen:
+		case gamestate.TitleScreen:
 			// Get Mouse Input
 			mouseState.Update()
-		case OptionsScreen:
+			// Draw titlescreen
+			t.Update(elapsedTime)
+			t.Draw(renderer)
+		case gamestate.OptionsScreen:
 			// Get Mouse Input
 			mouseState.Update()
-		case MainGame:
+		case gamestate.MainGame:
 			// Get Keyboard Input
 			getKeyboardState(g)
 			// Draw gameboard
 			g.Update(elapsedTime)
 			g.Draw(renderer)
+		case gamestate.QuitGame:
+			return
 		default:
 		}
 

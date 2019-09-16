@@ -2,6 +2,7 @@ package gameboard
 
 import (
 	"golang-games/PuzzleBlock/font"
+	"golang-games/PuzzleBlock/gamestate"
 	"golang-games/PuzzleBlock/sprite"
 	"math/rand"
 	"strconv"
@@ -11,9 +12,11 @@ import (
 )
 
 // NewGameBoard is a gameboard constructor
-func NewGameBoard(winWidth, winHeight, winDepth, numAcross, numDown, playAreaStart, playAreaEnd int, renderer *sdl.Renderer) *GameBoard {
+func NewGameBoard(gamestate *gamestate.GameState, winWidth, winHeight, winDepth, numAcross, numDown, playAreaStart, playAreaEnd int, renderer *sdl.Renderer) *GameBoard {
 
 	g := &GameBoard{}
+
+	g.CurrentGameState = gamestate
 
 	g.Blocks = make([][]Block, numDown)
 
@@ -199,7 +202,7 @@ func NewGameBoard(winWidth, winHeight, winDepth, numAcross, numDown, playAreaSta
 	g.CurrentActive = Pos{-1, -1}
 
 	// Set the font for the text
-	g.TextFont = font.NewTTFFont("assets/FifteenTwenty-Bold.otf", winWidth)
+	g.TextFont = font.NewTTFFont("assets/FifteenTwenty-Bold.otf", winWidth, winHeight)
 
 	// Set where the text goes on the screen
 	g.ScoreText = font.NewTTFString("Score:",

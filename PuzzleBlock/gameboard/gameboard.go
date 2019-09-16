@@ -2,6 +2,7 @@ package gameboard
 
 import (
 	"golang-games/PuzzleBlock/font"
+	"golang-games/PuzzleBlock/gamestate"
 	"golang-games/PuzzleBlock/sprite"
 	"math/rand"
 	"strconv"
@@ -50,6 +51,7 @@ type Block struct {
 
 // GameBoard is a struct that contains all the sprite information for the game
 type GameBoard struct {
+	CurrentGameState           *gamestate.GameState
 	Blocks                     [][]Block
 	Background                 *sprite.Sprite
 	LevelValue                 int

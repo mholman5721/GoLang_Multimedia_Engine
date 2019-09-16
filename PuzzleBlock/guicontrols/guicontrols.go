@@ -3,6 +3,7 @@ package guicontrols
 import (
 	"golang-games/PuzzleBlock/font"
 	"golang-games/PuzzleBlock/sprite"
+	"golang-games/PuzzleBlock/texturedrawing"
 	"vec3"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -71,9 +72,9 @@ type SpriteButton struct {
 // NewSpriteButton is a 'constructor' for an SpriteButton struct
 func NewSpriteButton(path string, backgroundColor, animBackgroundColor, selectedColor sdl.Color, pos vec3.Vector3, borderPct float32, animSpeedMS, w, h int, scaleX, scaleY float64, renderer *sdl.Renderer) *SpriteButton {
 
-	backgroundTex := CreateSinglePixelTexture(backgroundColor, renderer)
-	animTex := CreateSinglePixelTexture(animBackgroundColor, renderer)
-	selectedTex := CreateSinglePixelTexture(selectedColor, renderer)
+	backgroundTex := texturedrawing.CreateSinglePixelTexture(backgroundColor, renderer)
+	animTex := texturedrawing.CreateSinglePixelTexture(animBackgroundColor, renderer)
+	selectedTex := texturedrawing.CreateSinglePixelTexture(selectedColor, renderer)
 
 	sprite := sprite.NewSprite(path,
 		pos,
@@ -174,9 +175,9 @@ type TextButton struct {
 // NewTextButton is a 'constructor' for a TextButton struct
 func NewTextButton(winWidth, winHeight int, stringText string, size font.TextSize, textColor, backgroundColor, animBackgroundColor, selectedColor sdl.Color, pos vec3.Vector3, borderPct float32, animSpeedMS int, textFont *font.TTFFont, renderer *sdl.Renderer) *TextButton {
 
-	backgroundTex := CreateSinglePixelTexture(backgroundColor, renderer)
-	animTex := CreateSinglePixelTexture(animBackgroundColor, renderer)
-	selectedTex := CreateSinglePixelTexture(selectedColor, renderer)
+	backgroundTex := texturedrawing.CreateSinglePixelTexture(backgroundColor, renderer)
+	animTex := texturedrawing.CreateSinglePixelTexture(animBackgroundColor, renderer)
+	selectedTex := texturedrawing.CreateSinglePixelTexture(selectedColor, renderer)
 
 	text := font.NewTTFString(stringText, size, textColor, pos, textFont, renderer)
 
@@ -307,23 +308,4 @@ func (button *TextButton) Draw(renderer *sdl.Renderer) {
 		renderer.Copy(button.Background, nil, &button.Rect)
 	}
 	button.Text.Draw(renderer)
-}
-
-// CreateSinglePixelTexture returns a texture consisting of a single colored pixel
-func CreateSinglePixelTexture(color sdl.Color, renderer *sdl.Renderer) *sdl.Texture {
-	tex, err := renderer.CreateTexture(sdl.PIXELFORMAT_ABGR8888, sdl.TEXTUREACCESS_STATIC, 1, 1)
-	if err != nil {
-		panic(err)
-	}
-	tex.SetBlendMode(sdl.BLENDMODE_BLEND)
-
-	data := make([]byte, 4)
-	data[3] = color.A
-	data[2] = color.B
-	data[1] = color.G
-	data[0] = color.R
-
-	tex.Update(nil, data, 4)
-
-	return tex
 }

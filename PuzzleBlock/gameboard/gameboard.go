@@ -163,6 +163,14 @@ func (g *GameBoard) Update(time float64) {
 				g.CurrentActive = Pos{-1, -1}
 				g.GameOverTimer = 0
 				g.GameOverPausing = false
+				g.LevelValue = 1
+				g.ScoreValue = 0
+				g.DeGrayValue = 10
+				g.LevelFallingTimer = 0
+				g.LevelPostFallTimer = 0
+				g.BlockFallingTimer = 0
+				g.BlocksFallingTimer = 0
+				*g.CurrentGameState = gamestate.TitleScreen
 				break
 			} else {
 				g.GameOverTimer += time

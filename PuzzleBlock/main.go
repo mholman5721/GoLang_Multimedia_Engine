@@ -68,46 +68,9 @@ func main() {
 	// Initialize gameboard
 	g := gameboard.NewGameBoard(&currentGameState, WinWidth, WinHeight, WinDepth, 19, 10, 7, 12, renderer)
 
-	// Test Buttons
-	/*
-		textButtonFont := font.NewTTFFont("assets/FifteenTwenty-Bold.otf", WinWidth)
-		textButton := guicontrols.NewTextButton("  Hello  ",
-			font.FontLarge,
-			sdl.Color{R: 255, G: 255, B: 255, A: 255},
-			sdl.Color{R: 128, G: 128, B: 128, A: 192},
-			sdl.Color{R: 128, G: 128, B: 192, A: 192},
-			sdl.Color{R: 0, G: 0, B: 255, A: 192},
-			vec3.Vector3{X: 200, Y: 500, Z: 0},
-			0.3,
-			50,
-			textButtonFont,
-			renderer)
-
-		spriteButton := guicontrols.NewSpriteButton("assets/arrowLeft.png",
-			sdl.Color{R: 128, G: 128, B: 128, A: 192},
-			sdl.Color{R: 128, G: 128, B: 192, A: 192},
-			sdl.Color{R: 0, G: 0, B: 255, A: 192},
-			vec3.Vector3{X: 800, Y: 500, Z: 0},
-			0.3,
-			50,
-			64,
-			64,
-			1,
-			1,
-			renderer)
-	*/
-
 	// Main game loop
 	for {
 		frameStart = time.Now()
-
-		// Input
-		/*
-			currentMouseState := getMouseState()
-			if prevMouseState.leftButton == true {
-				fmt.Println("Mouse Down!")
-			}
-		*/
 
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch e := event.(type) {
@@ -115,11 +78,11 @@ func main() {
 				return
 			case *sdl.TouchFingerEvent:
 				if e.Type == sdl.FINGERDOWN {
-					touchX := int(e.X * float32(WinWidth))
-					touchY := int(e.Y * float32(WinHeight))
-					currentMouseState.x = touchX
-					currentMouseState.y = touchY
-					currentMouseState.leftButton = true
+					//touchX := int(e.X * float32(WinWidth))
+					//touchY := int(e.Y * float32(WinHeight))
+					//currentMouseState.x = touchX
+					//currentMouseState.y = touchY
+					//currentMouseState.leftButton = true
 				}
 			}
 		}
@@ -131,6 +94,7 @@ func main() {
 		case gamestate.TitleScreen:
 			// Get Mouse Input
 			mouseState.Update()
+
 			// Draw titlescreen
 			t.Update(elapsedTime)
 			t.Draw(renderer)
@@ -140,6 +104,7 @@ func main() {
 		case gamestate.MainGame:
 			// Get Keyboard Input
 			getKeyboardState(g)
+
 			// Draw gameboard
 			g.Update(elapsedTime)
 			g.Draw(renderer)
@@ -159,7 +124,5 @@ func main() {
 			//fps := int(1000 / elapsedTime)
 			//fmt.Println("ms per frame:", elapsedTime, "|", "fps:", fps)
 		}
-
-		prevMouseState = currentMouseState
 	}
 }

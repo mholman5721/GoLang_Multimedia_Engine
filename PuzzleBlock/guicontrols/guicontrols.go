@@ -52,11 +52,12 @@ func (mouseState *MouseState) Update() {
 
 // SpriteButton structs contain all the information needed for a simple button with an image
 type SpriteButton struct {
+	WinWidth        int
+	WinHeight       int
 	MainSprite      *sprite.Sprite
-	Rect            sdl.Rect
-	Background      *sdl.Texture
-	AnimBackground  *sdl.Texture
-	SelectedTex     *sdl.Texture
+	Background      *texturedrawing.SinglePixelTexture
+	AnimBackground  *texturedrawing.SinglePixelTexture
+	SelectedTex     *texturedrawing.SinglePixelTexture
 	IsSelected      bool
 	WasLeftClicked  bool
 	WasRightClicked bool
@@ -65,16 +66,13 @@ type SpriteButton struct {
 	AnimTimer       float64
 	BackgroundPos   vec3.Vector3
 	SpritePos       vec3.Vector3
-	W               int32
-	H               int32
+	W               int
+	H               int
+	BorderOffset    int
 }
 
 // NewSpriteButton is a 'constructor' for an SpriteButton struct
-func NewSpriteButton(path string, backgroundColor, animBackgroundColor, selectedColor sdl.Color, pos vec3.Vector3, borderPct float32, animSpeedMS, w, h int, scaleX, scaleY float64, renderer *sdl.Renderer) *SpriteButton {
-
-	backgroundTex := texturedrawing.CreateSinglePixelTexture(backgroundColor, renderer)
-	animTex := texturedrawing.CreateSinglePixelTexture(animBackgroundColor, renderer)
-	selectedTex := texturedrawing.CreateSinglePixelTexture(selectedColor, renderer)
+func NewSpriteButton(winWidth, winHeight int, path string, backgroundColor, animBackgroundColor, selectedColor sdl.Color, pos vec3.Vector3, borderPct float32, animSpeedMS, w, h int, scaleX, scaleY float64, renderer *sdl.Renderer) *SpriteButton {
 
 	sprite := sprite.NewSprite(path,
 		pos,
@@ -92,20 +90,99 @@ func NewSpriteButton(path string, backgroundColor, animBackgroundColor, selected
 		false,
 		renderer)
 
-	borderOffset := int32(float32(w) * borderPct)
+	borderOffset := int(float32(w) * borderPct)
 
-	backPos := vec3.Vector3{X: float32(int32(pos.X) - borderOffset), Y: float32(int32(pos.Y) - borderOffset), Z: 0}
+	backPos := vec3.Vector3{X: float32(int(pos.X) - borderOffset), Y: float32(int(pos.Y) - borderOffset), Z: 0}
 	spritePos := vec3.Vector3{X: pos.X, Y: pos.Y, Z: 0}
-	width := (int32(w) + borderOffset*2)
-	height := (int32(h) + borderOffset*2)
-	rect := sdl.Rect{X: int32(backPos.X), Y: int32(backPos.Y), W: width, H: height}
+	width := (int(w) + borderOffset*2)
+	height := (int(h) + borderOffset*2)
+	rect := sdl.Rect{X: int32(backPos.X), Y: int32(backPos.Y), W: int32(width), H: int32(height)}
 
-	return &SpriteButton{sprite, rect, backgroundTex, animTex, selectedTex, false, false, false, animSpeedMS, false, 0, backPos, spritePos, width, height}
+	borderRect := rect
+	borderThickness := int32(float32(borderRect.W) * 0.01)
+	borderRect.W = rect.W + borderThickness*2
+	borderRect.H = rect.H + borderThickness*2
+	borderRect.X -= borderThickness
+	borderRect.Y -= borderThickness
+
+	backgroundTex := texturedrawing.NewSinglePixelTexture(backgroundColor, rect, renderer)
+	animTex := texturedrawing.NewSinglePixelTexture(animBackgroundColor, rect, renderer)
+	selectedTex := texturedrawing.NewSinglePixelTexture(selectedColor, borderRect, renderer)
+
+	return &SpriteButton{winWidth,
+		winHeight,
+		sprite,
+		backgroundTex,
+		animTex,
+		selectedTex,
+		false,
+		false,
+		false,
+		animSpeedMS,
+		false,
+		0,
+		backPos,
+		spritePos,
+		width,
+		height,
+		borderOffset}
+}
+
+// SetButtonPosition sets the positions of all the components of a button
+func (button *SpriteButton) SetButtonPosition(pos vec3.Vector3) {
+	button.SpritePos = pos
+	button.MainSprite.Pos = button.SpritePos
+	button.BackgroundPos = vec3.Vector3{X: float32(button.SpritePos.X - float32(button.BorderOffset)), Y: float32(button.SpritePos.Y - float32(button.BorderOffset)), Z: 0}
+	button.Background.Rect = sdl.Rect{X: int32(button.BackgroundPos.X), Y: int32(button.BackgroundPos.Y), W: int32(button.W), H: int32(button.H)}
+	button.AnimBackground.Rect = sdl.Rect{X: int32(button.BackgroundPos.X), Y: int32(button.BackgroundPos.Y), W: int32(button.W), H: int32(button.H)}
+
+	borderRect := button.Background.Rect
+	borderThickness := int32(float32(borderRect.W) * 0.01)
+	borderRect.W = borderRect.W + borderThickness*2
+	borderRect.H = borderRect.H + borderThickness*2
+	borderRect.X -= borderThickness
+	borderRect.Y -= borderThickness
+
+	button.SelectedTex.Rect = borderRect
+}
+
+// SetCenterX sets the position to the center of the screen
+func (button *SpriteButton) SetCenterX() {
+
+	_, _, w, _, err := button.MainSprite.Tex.Query()
+	if err != nil {
+		panic(err)
+	}
+
+	if int(w) < button.WinWidth {
+		diff := button.WinWidth - int(w)
+		button.SetButtonPosition(vec3.Vector3{X: float32(diff / 2), Y: button.SpritePos.Y, Z: 0})
+	} else {
+		diff := int(w) - button.WinWidth
+		button.SetButtonPosition(vec3.Vector3{X: float32(diff / 2), Y: button.SpritePos.Y, Z: 0})
+	}
+}
+
+// SetCenterY sets the position to the center of the screen
+func (button *SpriteButton) SetCenterY() {
+
+	_, _, _, h, err := button.MainSprite.Tex.Query()
+	if err != nil {
+		panic(err)
+	}
+
+	if int(h) < button.WinHeight {
+		diff := button.H - int(h)
+		button.SetButtonPosition(vec3.Vector3{X: button.SpritePos.X, Y: float32(diff / 2), Z: 0})
+	} else {
+		diff := int(h) - button.WinHeight
+		button.SetButtonPosition(vec3.Vector3{X: button.SpritePos.X, Y: float32(diff / 2), Z: 0})
+	}
 }
 
 // Update updates whether the button was clicked or not
 func (button *SpriteButton) Update(mouseState *MouseState, time float64) {
-	if button.Rect.HasIntersection(&sdl.Rect{X: int32(mouseState.X), Y: int32(mouseState.Y), W: 1, H: 1}) {
+	if button.Background.Rect.HasIntersection(&sdl.Rect{X: int32(mouseState.X), Y: int32(mouseState.Y), W: 1, H: 1}) {
 		button.WasLeftClicked = !mouseState.PrevLeftButton && mouseState.LeftButton
 		button.WasRightClicked = !mouseState.PrevRightButton && mouseState.RightButton
 		button.IsSelected = true
@@ -132,20 +209,14 @@ func (button *SpriteButton) Update(mouseState *MouseState, time float64) {
 // Draw draws the button to the screen
 func (button *SpriteButton) Draw(renderer *sdl.Renderer) {
 	if button.IsSelected {
-		borderRect := button.Rect
-		borderThickness := int32(float32(borderRect.W) * 0.01)
-		borderRect.W = button.Rect.W + borderThickness*2
-		borderRect.H = button.Rect.H + borderThickness*2
-		borderRect.X -= borderThickness
-		borderRect.Y -= borderThickness
-		renderer.Copy(button.SelectedTex, nil, &borderRect)
+		button.SelectedTex.Draw(renderer)
 	}
 	if button.Animating == true {
 		button.MainSprite.CFrame = 1
-		renderer.Copy(button.AnimBackground, nil, &button.Rect)
+		button.AnimBackground.Draw(renderer)
 	} else {
 		button.MainSprite.CFrame = 0
-		renderer.Copy(button.Background, nil, &button.Rect)
+		button.Background.Draw(renderer)
 	}
 	button.MainSprite.Draw(renderer)
 }
@@ -155,10 +226,9 @@ type TextButton struct {
 	WinWidth        int
 	WinHeight       int
 	Text            *font.TTFString
-	Rect            sdl.Rect
-	Background      *sdl.Texture
-	AnimBackground  *sdl.Texture
-	SelectedTex     *sdl.Texture
+	Background      *texturedrawing.SinglePixelTexture
+	AnimBackground  *texturedrawing.SinglePixelTexture
+	SelectedTex     *texturedrawing.SinglePixelTexture
 	IsSelected      bool
 	WasLeftClicked  bool
 	WasRightClicked bool
@@ -174,10 +244,6 @@ type TextButton struct {
 
 // NewTextButton is a 'constructor' for a TextButton struct
 func NewTextButton(winWidth, winHeight int, stringText string, size font.TextSize, textColor, backgroundColor, animBackgroundColor, selectedColor sdl.Color, pos vec3.Vector3, borderPct float32, animSpeedMS int, textFont *font.TTFFont, renderer *sdl.Renderer) *TextButton {
-
-	backgroundTex := texturedrawing.CreateSinglePixelTexture(backgroundColor, renderer)
-	animTex := texturedrawing.CreateSinglePixelTexture(animBackgroundColor, renderer)
-	selectedTex := texturedrawing.CreateSinglePixelTexture(selectedColor, renderer)
 
 	text := font.NewTTFString(stringText, size, textColor, pos, textFont, renderer)
 
@@ -204,10 +270,20 @@ func NewTextButton(winWidth, winHeight int, stringText string, size font.TextSiz
 	height := int(h) + borderOffset*2
 	rect := sdl.Rect{X: int32(backPos.X), Y: int32(backPos.Y), W: int32(width), H: int32(height)}
 
+	borderRect := rect
+	borderThickness := int32(float32(borderRect.W) * 0.01)
+	borderRect.W = rect.W + borderThickness*2
+	borderRect.H = rect.H + borderThickness*2
+	borderRect.X -= borderThickness
+	borderRect.Y -= borderThickness
+
+	backgroundTex := texturedrawing.NewSinglePixelTexture(backgroundColor, rect, renderer)
+	animTex := texturedrawing.NewSinglePixelTexture(animBackgroundColor, rect, renderer)
+	selectedTex := texturedrawing.NewSinglePixelTexture(selectedColor, borderRect, renderer)
+
 	return &TextButton{winWidth,
 		winHeight,
 		text,
-		rect,
 		backgroundTex,
 		animTex,
 		selectedTex,
@@ -229,7 +305,17 @@ func (button *TextButton) SetButtonPosition(pos vec3.Vector3) {
 	button.TextPos = pos
 	button.Text.Pos = button.TextPos
 	button.BackgroundPos = vec3.Vector3{X: float32(button.TextPos.X - float32(button.BorderOffset)), Y: float32(button.TextPos.Y - float32(button.BorderOffset)), Z: 0}
-	button.Rect = sdl.Rect{X: int32(button.BackgroundPos.X), Y: int32(button.BackgroundPos.Y), W: int32(button.W), H: int32(button.H)}
+	button.Background.Rect = sdl.Rect{X: int32(button.BackgroundPos.X), Y: int32(button.BackgroundPos.Y), W: int32(button.W), H: int32(button.H)}
+	button.AnimBackground.Rect = sdl.Rect{X: int32(button.BackgroundPos.X), Y: int32(button.BackgroundPos.Y), W: int32(button.W), H: int32(button.H)}
+
+	borderRect := button.Background.Rect
+	borderThickness := int32(float32(borderRect.W) * 0.01)
+	borderRect.W = borderRect.W + borderThickness*2
+	borderRect.H = borderRect.H + borderThickness*2
+	borderRect.X -= borderThickness
+	borderRect.Y -= borderThickness
+
+	button.SelectedTex.Rect = borderRect
 }
 
 // SetCenterX sets the position to the center of the screen
@@ -268,7 +354,7 @@ func (button *TextButton) SetCenterY() {
 
 // Update updates whether the button was clicked or not
 func (button *TextButton) Update(mouseState *MouseState, time float64) {
-	if button.Rect.HasIntersection(&sdl.Rect{X: int32(mouseState.X), Y: int32(mouseState.Y), W: 1, H: 1}) {
+	if button.Background.Rect.HasIntersection(&sdl.Rect{X: int32(mouseState.X), Y: int32(mouseState.Y), W: 1, H: 1}) {
 		button.WasLeftClicked = !mouseState.PrevLeftButton && mouseState.LeftButton
 		button.WasRightClicked = !mouseState.PrevRightButton && mouseState.RightButton
 		button.IsSelected = true
@@ -294,18 +380,12 @@ func (button *TextButton) Update(mouseState *MouseState, time float64) {
 // Draw draws the button to the screen
 func (button *TextButton) Draw(renderer *sdl.Renderer) {
 	if button.IsSelected {
-		borderRect := button.Rect
-		borderThickness := int32(float32(borderRect.W) * 0.01)
-		borderRect.W = button.Rect.W + borderThickness*2
-		borderRect.H = button.Rect.H + borderThickness*2
-		borderRect.X -= borderThickness
-		borderRect.Y -= borderThickness
-		renderer.Copy(button.SelectedTex, nil, &borderRect)
+		button.SelectedTex.Draw(renderer)
 	}
 	if button.Animating == true {
-		renderer.Copy(button.AnimBackground, nil, &button.Rect)
+		button.AnimBackground.Draw(renderer)
 	} else {
-		renderer.Copy(button.Background, nil, &button.Rect)
+		button.Background.Draw(renderer)
 	}
 	button.Text.Draw(renderer)
 }

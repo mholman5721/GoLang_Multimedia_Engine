@@ -2,8 +2,15 @@ package texturedrawing
 
 import "github.com/veandco/go-sdl2/sdl"
 
-// CreateSinglePixelTexture returns a texture consisting of a single colored pixel
-func CreateSinglePixelTexture(color sdl.Color, renderer *sdl.Renderer) *sdl.Texture {
+// SinglePixelTexture contains the data for making monocolor rectangular textures
+type SinglePixelTexture struct {
+	Rect    sdl.Rect
+	Texture *sdl.Texture
+}
+
+// NewSinglePixelTexture returns a texture consisting of a single colored pixel
+func NewSinglePixelTexture(color sdl.Color, rect sdl.Rect, renderer *sdl.Renderer) *SinglePixelTexture {
+
 	tex, err := renderer.CreateTexture(sdl.PIXELFORMAT_ABGR8888, sdl.TEXTUREACCESS_STATIC, 1, 1)
 	if err != nil {
 		panic(err)
@@ -18,5 +25,12 @@ func CreateSinglePixelTexture(color sdl.Color, renderer *sdl.Renderer) *sdl.Text
 
 	tex.Update(nil, data, 4)
 
-	return tex
+	t := &SinglePixelTexture{rect, tex}
+
+	return t
+}
+
+// Draw draws the texture
+func (t *SinglePixelTexture) Draw(renderer *sdl.Renderer) {
+	renderer.Copy(t.Texture, nil, &t.Rect)
 }

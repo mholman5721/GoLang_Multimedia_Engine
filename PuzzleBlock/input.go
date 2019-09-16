@@ -12,9 +12,10 @@ type mouseState struct {
 	x, y        int
 }
 
-var currentMouseState mouseState
-var prevMouseState mouseState
+//var currentMouseState mouseState
+//var prevMouseState mouseState
 
+/*
 func getMouseState() mouseState {
 	mouseX, mouseY, mouseButtonState := sdl.GetMouseState()
 	leftButton := mouseButtonState & sdl.ButtonLMask()
@@ -29,6 +30,7 @@ func getMouseState() mouseState {
 
 	return result
 }
+*/
 
 var keyboardState []uint8
 var prevKeyboardState []uint8
@@ -71,6 +73,6 @@ func initInput() {
 	for i, v := range keyboardState {
 		prevKeyboardState[i] = v
 	}
-	currentMouseState = getMouseState()
-	prevMouseState = currentMouseState
+	//currentMouseState = getMouseState()
+	//prevMouseState = currentMouseState
 }

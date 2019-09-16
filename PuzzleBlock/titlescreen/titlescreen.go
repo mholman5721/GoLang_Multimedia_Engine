@@ -109,7 +109,7 @@ func NewTitleScreen(gamestate *gamestate.GameState, mousestate *guicontrols.Mous
 		sdl.Color{R: 0, G: 0, B: 255, A: 192},
 		vec3.Vector3{X: 0, Y: float32(t.WinHeight) * 0.48, Z: 0},
 		0.1,
-		50,
+		100,
 		t.TextFont,
 		renderer)
 	t.StartButton.SetCenterX()
@@ -124,7 +124,7 @@ func NewTitleScreen(gamestate *gamestate.GameState, mousestate *guicontrols.Mous
 		sdl.Color{R: 0, G: 0, B: 255, A: 192},
 		vec3.Vector3{X: 0, Y: float32(t.WinHeight) * 0.65, Z: 0},
 		0.1,
-		50,
+		100,
 		t.TextFont,
 		renderer)
 	t.OptionsButton.SetCenterX()
@@ -139,7 +139,7 @@ func NewTitleScreen(gamestate *gamestate.GameState, mousestate *guicontrols.Mous
 		sdl.Color{R: 0, G: 0, B: 255, A: 192},
 		vec3.Vector3{X: 0, Y: float32(t.WinHeight) * 0.82, Z: 0},
 		0.1,
-		50,
+		100,
 		t.TextFont,
 		renderer)
 	t.QuitButton.SetCenterX()

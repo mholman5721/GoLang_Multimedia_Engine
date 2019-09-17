@@ -108,6 +108,8 @@ func main() {
 			// Draw gameboard
 			g.Update(elapsedTime)
 			g.Draw(renderer)
+		case gamestate.Transitioning:
+
 		case gamestate.QuitGame:
 			return
 		default:

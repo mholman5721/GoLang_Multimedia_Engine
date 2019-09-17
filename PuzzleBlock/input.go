@@ -53,6 +53,4 @@ func initInput() {
 	for i, v := range keyboardState {
 		prevKeyboardState[i] = v
 	}
-	currentMouseState = getMouseState()
-	prevMouseState = currentMouseState
 }

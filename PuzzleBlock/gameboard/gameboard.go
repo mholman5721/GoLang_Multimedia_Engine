@@ -2,7 +2,7 @@ package gameboard
 
 import (
 	"golang-games/PuzzleBlock/font"
-	"golang-games/PuzzleBlock/gamestate"
+	"golang-games/PuzzleBlock/gamestatetransition"
 	"golang-games/PuzzleBlock/sprite"
 	"math/rand"
 	"strconv"
@@ -51,7 +51,7 @@ type Block struct {
 
 // GameBoard is a struct that contains all the sprite information for the game
 type GameBoard struct {
-	CurrentGameState           *gamestate.GameState
+	CurrentGameState           *gamestatetransition.GameStateTransition
 	Blocks                     [][]Block
 	Background                 *sprite.Sprite
 	LevelValue                 int
@@ -170,7 +170,8 @@ func (g *GameBoard) Update(time float64) {
 				g.LevelPostFallTimer = 0
 				g.BlockFallingTimer = 0
 				g.BlocksFallingTimer = 0
-				*g.CurrentGameState = gamestate.TitleScreen
+				// Change the game state
+
 				break
 			} else {
 				g.GameOverTimer += time

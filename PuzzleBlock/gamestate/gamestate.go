@@ -4,8 +4,10 @@ package gamestate
 type GameState int
 
 const (
+	// StartUp is the state before the game starts running
+	StartUp GameState = iota
 	// TitleScreen is the first screen the player sees
-	TitleScreen GameState = iota
+	TitleScreen
 	// OptionsScreen allows the player to set various options like sound volume, number of levels, etc.
 	OptionsScreen
 	// MainGame is where the game is actually played

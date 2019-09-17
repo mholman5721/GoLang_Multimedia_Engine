@@ -2,7 +2,7 @@ package titlescreen
 
 import (
 	"golang-games/PuzzleBlock/font"
-	"golang-games/PuzzleBlock/gamestate"
+	"golang-games/PuzzleBlock/gamestatetransition"
 	"golang-games/PuzzleBlock/guicontrols"
 	"golang-games/PuzzleBlock/sprite"
 	"math/rand"
@@ -13,7 +13,7 @@ import (
 
 // TitleScreen is a struct that contains all the sprite information for the title screen
 type TitleScreen struct {
-	CurrentGameState *gamestate.GameState
+	CurrentGameState *gamestatetransition.GameStateTransition
 	MouseState       *guicontrols.MouseState
 	WinWidth         int
 	WinHeight        int
@@ -27,7 +27,7 @@ type TitleScreen struct {
 }
 
 // NewTitleScreen is a gameboard constructor
-func NewTitleScreen(gamestate *gamestate.GameState, mousestate *guicontrols.MouseState, winWidth, winHeight, winDepth, numBlocks int, renderer *sdl.Renderer) *TitleScreen {
+func NewTitleScreen(winWidth, winHeight, winDepth int, gamestate *gamestatetransition.GameStateTransition, mousestate *guicontrols.MouseState, numBlocks int, renderer *sdl.Renderer) *TitleScreen {
 
 	t := &TitleScreen{}
 
@@ -152,12 +152,12 @@ func (t *TitleScreen) Update(time float64) {
 
 	// Change to MainGame if the start button is clicked
 	if t.StartButton.WasLeftClicked == true {
-		*t.CurrentGameState = gamestate.MainGame
+
 	}
 
 	// Quit the game if the quit button is clicked
 	if t.QuitButton.WasLeftClicked == true {
-		*t.CurrentGameState = gamestate.QuitGame
+
 	}
 
 	// Update the blocks

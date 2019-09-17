@@ -2,7 +2,7 @@ package gameboard
 
 import (
 	"golang-games/PuzzleBlock/font"
-	"golang-games/PuzzleBlock/gamestate"
+	"golang-games/PuzzleBlock/gamestatetransition"
 	"golang-games/PuzzleBlock/sprite"
 	"math/rand"
 	"strconv"
@@ -12,7 +12,7 @@ import (
 )
 
 // NewGameBoard is a gameboard constructor
-func NewGameBoard(gamestate *gamestate.GameState, winWidth, winHeight, winDepth, numAcross, numDown, playAreaStart, playAreaEnd int, renderer *sdl.Renderer) *GameBoard {
+func NewGameBoard(winWidth, winHeight, winDepth int, gamestate *gamestatetransition.GameStateTransition, numAcross, numDown, playAreaStart, playAreaEnd int, renderer *sdl.Renderer) *GameBoard {
 
 	g := &GameBoard{}
 

@@ -3,6 +3,7 @@ package main
 import (
 	"golang-games/PuzzleBlock/gameboard"
 	"golang-games/PuzzleBlock/gamestate"
+	"golang-games/PuzzleBlock/gamestatetransition"
 	"golang-games/PuzzleBlock/guicontrols"
 	"golang-games/PuzzleBlock/titlescreen"
 	"time"
@@ -60,13 +61,15 @@ func main() {
 	mouseState := guicontrols.GetMouseState()
 
 	// Initialize GameState
-	currentGameState := gamestate.TitleScreen
+	currentGameState := gamestate.StartUp
 
-	// Initialize titlescreen
-	t := titlescreen.NewTitleScreen(&currentGameState, mouseState, WinWidth, WinHeight, WinDepth, 10, renderer)
+	gameStateTransition := gamestatetransition.NewGameStateTransition(WinWidth, WinHeight, currentGameState, gamestate.TitleScreen, &currentGameState, 200, renderer)
+
+	// TitleScreen variable
+	var t *titlescreen.TitleScreen
 
 	// Initialize gameboard
-	g := gameboard.NewGameBoard(&currentGameState, WinWidth, WinHeight, WinDepth, 19, 10, 7, 12, renderer)
+	g := gameboard.NewGameBoard(WinWidth, WinHeight, WinDepth, gameStateTransition, 19, 10, 7, 12, renderer)
 
 	// Main game loop
 	for {
@@ -91,6 +94,10 @@ func main() {
 		renderer.Clear()
 
 		switch currentGameState {
+		case gamestate.StartUp:
+			// Initialize titlescreen
+			t = titlescreen.NewTitleScreen(WinWidth, WinHeight, WinDepth, gameStateTransition, mouseState, 10, renderer)
+			currentGameState = gamestate.TitleScreen
 		case gamestate.TitleScreen:
 			// Get Mouse Input
 			mouseState.Update()

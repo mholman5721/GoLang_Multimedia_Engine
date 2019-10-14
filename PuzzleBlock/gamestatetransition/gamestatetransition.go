@@ -13,7 +13,7 @@ type GameStateTransition struct {
 	WinHeight         int
 	FromState         gamestate.GameState
 	ToState           gamestate.GameState
-	CurrentGameState  gamestate.GameState
+	CurrentGameState  *gamestate.GameState
 	WipeTex           *texturedrawing.SinglePixelTexture
 	TransitioningUp   bool
 	TransitioningDown bool
@@ -23,11 +23,11 @@ type GameStateTransition struct {
 }
 
 // NewGameStateTransition creates a new GameStateTransition struct
-func NewGameStateTransition(winWidth, winHeight int, fromstate gamestate.GameState, tostate, currentstate gamestate.GameState, transitiontime float64, renderer *sdl.Renderer) *GameStateTransition {
+func NewGameStateTransition(winWidth, winHeight int, fromstate gamestate.GameState, tostate gamestate.GameState, currentstate *gamestate.GameState, transitiontime float64, renderer *sdl.Renderer) *GameStateTransition {
 
-	t := texturedrawing.NewSinglePixelTexture(sdl.Color{R: 255, G: 0, B: 255, A: 255}, sdl.Rect{X: int32(winWidth / 2), Y: int32(winHeight / 2), W: 1000, H: 1000}, renderer)
+	t := texturedrawing.NewSinglePixelTexture(sdl.Color{R: 0, G: 0, B: 0, A: 0}, sdl.Rect{X: int32(winWidth / 2), Y: int32(winHeight / 2), W: 1, H: 1}, renderer)
 
-	return &GameStateTransition{winWidth, winHeight, fromstate, tostate, currentstate, t, false, false, false, transitiontime, 0}
+	return &GameStateTransition{winWidth, winHeight, fromstate, tostate, currentstate, t, false, false, transitiontime, 0}
 }
 
 // Update updates the state transition
@@ -61,5 +61,5 @@ func (g *GameStateTransition) Update(time float64) {
 
 // Draw draws the WipeTex for the transition
 func (g *GameStateTransition) Draw(renderer *sdl.Renderer) {
-	g.WipeTex.Draw(renderer)
+
 }

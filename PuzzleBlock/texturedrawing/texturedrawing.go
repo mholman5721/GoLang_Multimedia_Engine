@@ -1,6 +1,8 @@
 package texturedrawing
 
-import "github.com/veandco/go-sdl2/sdl"
+import (
+	"github.com/veandco/go-sdl2/sdl"
+)
 
 // SinglePixelTexture contains the data for making monocolor rectangular textures
 type SinglePixelTexture struct {

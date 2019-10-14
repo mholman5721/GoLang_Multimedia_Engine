@@ -2,6 +2,7 @@ package titlescreen
 
 import (
 	"golang-games/PuzzleBlock/font"
+	"golang-games/PuzzleBlock/gamestate"
 	"golang-games/PuzzleBlock/gamestatetransition"
 	"golang-games/PuzzleBlock/guicontrols"
 	"golang-games/PuzzleBlock/sprite"
@@ -152,12 +153,20 @@ func (t *TitleScreen) Update(time float64) {
 
 	// Change to MainGame if the start button is clicked
 	if t.StartButton.WasLeftClicked == true {
+		t.CurrentGameState.Transitioning = true
+		t.CurrentGameState.ToState = gamestate.MainGame
+	}
 
+	// Change to Options screen if the start button is clicked
+	if t.OptionsButton.WasLeftClicked == true {
+		t.CurrentGameState.Transitioning = true
+		t.CurrentGameState.ToState = gamestate.OptionsScreen
 	}
 
 	// Quit the game if the quit button is clicked
 	if t.QuitButton.WasLeftClicked == true {
-
+		t.CurrentGameState.Transitioning = true
+		t.CurrentGameState.ToState = gamestate.QuitGame
 	}
 
 	// Update the blocks

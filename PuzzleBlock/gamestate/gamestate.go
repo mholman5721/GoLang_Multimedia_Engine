@@ -12,8 +12,6 @@ const (
 	OptionsScreen
 	// MainGame is where the game is actually played
 	MainGame
-	// Transitioning is an intermediate state that transfers from one state to another
-	Transitioning
 	// QuitGame exits the game
 	QuitGame
 )

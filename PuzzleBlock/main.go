@@ -61,9 +61,7 @@ func main() {
 	mouseState := guicontrols.GetMouseState()
 
 	// Initialize GameState
-	currentGameState := gamestate.StartUp
-
-	gameStateTransition := gamestatetransition.NewGameStateTransition(WinWidth, WinHeight, currentGameState, gamestate.TitleScreen, &currentGameState, 200, renderer)
+	gameStateTransition := gamestatetransition.NewGameStateTransition(WinWidth, WinHeight, gamestate.StartUp, gamestate.TitleScreen, gamestate.StartUp, 200, renderer)
 
 	// TitleScreen variable
 	var t *titlescreen.TitleScreen
@@ -93,30 +91,46 @@ func main() {
 		// Clear the screen
 		renderer.Clear()
 
-		switch currentGameState {
+		switch gameStateTransition.CurrentGameState {
 		case gamestate.StartUp:
 			// Initialize titlescreen
 			t = titlescreen.NewTitleScreen(WinWidth, WinHeight, WinDepth, gameStateTransition, mouseState, 10, renderer)
-			currentGameState = gamestate.TitleScreen
+			gameStateTransition.Transitioning = true
+			gameStateTransition.ToState = gamestate.TitleScreen
+			gameStateTransition.Update(elapsedTime)
+			gameStateTransition.Draw(renderer)
 		case gamestate.TitleScreen:
 			// Get Mouse Input
-			mouseState.Update()
+			if gameStateTransition.Transitioning == false {
+				mouseState.Update()
+			} else {
+				gameStateTransition.Update(elapsedTime)
+				gameStateTransition.Draw(renderer)
+			}
 
 			// Draw titlescreen
 			t.Update(elapsedTime)
 			t.Draw(renderer)
 		case gamestate.OptionsScreen:
 			// Get Mouse Input
-			mouseState.Update()
+			if gameStateTransition.Transitioning == false {
+				mouseState.Update()
+			} else {
+				gameStateTransition.Update(elapsedTime)
+				gameStateTransition.Draw(renderer)
+			}
 		case gamestate.MainGame:
 			// Get Keyboard Input
-			getKeyboardState(g)
+			if gameStateTransition.Transitioning == false {
+				getKeyboardState(g)
+			} else {
+				gameStateTransition.Update(elapsedTime)
+				gameStateTransition.Draw(renderer)
+			}
 
 			// Draw gameboard
 			g.Update(elapsedTime)
 			g.Draw(renderer)
-		case gamestate.Transitioning:
-
 		case gamestate.QuitGame:
 			return
 		default:

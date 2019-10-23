@@ -6,6 +6,7 @@ import (
 	"golang-games/PuzzleBlock/gamestatetransition"
 	"golang-games/PuzzleBlock/guicontrols"
 	"golang-games/PuzzleBlock/titlescreen"
+	"math/rand"
 	"time"
 
 	"github.com/veandco/go-sdl2/mix"
@@ -31,7 +32,7 @@ func init() {
 }
 
 func initRendererAndWindow() (*sdl.Renderer, *sdl.Window) {
-	window, err := sdl.CreateWindow("PuzzleBlock", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, int32(WinWidth), int32(WinHeight), sdl.WINDOW_SHOWN)
+	window, err := sdl.CreateWindow("Loading...", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, int32(WinWidth), int32(WinHeight), sdl.WINDOW_SHOWN)
 	if err != nil {
 		panic(err)
 	}
@@ -59,6 +60,9 @@ func main() {
 	initInput()
 
 	mouseState := guicontrols.GetMouseState()
+
+	// Set Random Seed
+	rand.Seed(time.Now().UTC().UnixNano())
 
 	// Initialize GameState
 	gameStateTransition := gamestatetransition.NewGameStateTransition(WinWidth, WinHeight, gamestate.StartUp, gamestate.TitleScreen, gamestate.StartUp, 500, renderer)
@@ -97,6 +101,7 @@ func main() {
 			t = titlescreen.NewTitleScreen(WinWidth, WinHeight, WinDepth, gameStateTransition, mouseState, 10, renderer)
 			gameStateTransition.TransitioningDown = true
 			gameStateTransition.CurrentGameState = gamestate.TitleScreen
+			window.SetTitle("PuzzleBlock")
 		case gamestate.TitleScreen:
 			// Get Mouse Input
 			if gameStateTransition.TransitioningDown == false {
@@ -116,7 +121,10 @@ func main() {
 			// Get Mouse Input
 			if gameStateTransition.Transitioning == false {
 				mouseState.Update()
-			} else {
+			}
+
+			// Draw transition
+			if gameStateTransition.TransitioningDown == true || gameStateTransition.TransitioningUp == true {
 				gameStateTransition.Update(elapsedTime)
 				gameStateTransition.Draw(renderer)
 			}

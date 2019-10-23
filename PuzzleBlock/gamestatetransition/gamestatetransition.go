@@ -52,6 +52,8 @@ func (g *GameStateTransition) Update(time float64) {
 		g.WipeTex.Rect.W = int32(float64(g.WinWidth) * scale)
 		g.WipeTex.Rect.H = int32(float64(g.WinHeight) * scale)
 
+		g.WipeTex.Texture.SetAlphaMod(uint8(255 * scale))
+
 		g.TransitionTimer += time
 	} else if g.TransitionTimer < g.TransitionTime && g.TransitioningDown == true {
 		scale := mathhelper.ScaleBetween(g.TransitionTimer, 0, 1, 0, g.TransitionTime)
@@ -60,6 +62,8 @@ func (g *GameStateTransition) Update(time float64) {
 		g.WipeTex.Rect.Y = int32(float64(g.WinHeight/2) * scale)
 		g.WipeTex.Rect.W = int32(g.WinWidth) - int32(float64(g.WinWidth)*scale)
 		g.WipeTex.Rect.H = int32(g.WinHeight) - int32(float64(g.WinHeight)*scale)
+
+		g.WipeTex.Texture.SetAlphaMod(uint8(255 * scale))
 
 		g.TransitionTimer += time
 	}

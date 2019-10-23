@@ -2,6 +2,7 @@ package gameboard
 
 import (
 	"golang-games/PuzzleBlock/font"
+	"golang-games/PuzzleBlock/gamestate"
 	"golang-games/PuzzleBlock/gamestatetransition"
 	"golang-games/PuzzleBlock/sprite"
 	"math/rand"
@@ -170,8 +171,10 @@ func (g *GameBoard) Update(time float64) {
 				g.LevelPostFallTimer = 0
 				g.BlockFallingTimer = 0
 				g.BlocksFallingTimer = 0
-				// Change the game state
 
+				// Change the game state
+				g.CurrentGameState.TransitioningUp = true
+				g.CurrentGameState.ToState = gamestate.TitleScreen
 				break
 			} else {
 				g.GameOverTimer += time

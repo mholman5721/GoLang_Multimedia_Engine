@@ -2,6 +2,7 @@ package gamestatetransition
 
 import (
 	"golang-games/PuzzleBlock/gamestate"
+	"golang-games/PuzzleBlock/mathhelper"
 	"golang-games/PuzzleBlock/texturedrawing"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -25,7 +26,7 @@ type GameStateTransition struct {
 // NewGameStateTransition creates a new GameStateTransition struct
 func NewGameStateTransition(winWidth, winHeight int, fromstate gamestate.GameState, tostate gamestate.GameState, currentstate gamestate.GameState, transitiontime float64, renderer *sdl.Renderer) *GameStateTransition {
 
-	t := texturedrawing.NewSinglePixelTexture(sdl.Color{R: 255, G: 0, B: 255, A: 255}, sdl.Rect{X: 0, Y: 0, W: int32(winWidth), H: int32(winHeight)}, renderer)
+	t := texturedrawing.NewSinglePixelTexture(sdl.Color{R: 0, G: 0, B: 0, A: 255}, sdl.Rect{X: 0, Y: 0, W: int32(winWidth), H: int32(winHeight)}, renderer)
 
 	return &GameStateTransition{winWidth, winHeight, fromstate, tostate, currentstate, t, false, false, false, transitiontime, 0}
 }
@@ -34,25 +35,31 @@ func NewGameStateTransition(winWidth, winHeight int, fromstate gamestate.GameSta
 func (g *GameStateTransition) Update(time float64) {
 	if g.TransitionTimer >= g.TransitionTime && g.TransitioningUp == true {
 		g.TransitioningUp = false
+		g.TransitioningDown = true
+		g.FromState = g.CurrentGameState
+		g.CurrentGameState = g.ToState
 
 		g.TransitionTimer = 0
-
 	} else if g.TransitionTimer >= g.TransitionTime && g.TransitioningDown == true {
 		g.TransitioningDown = false
 
 		g.TransitionTimer = 0
 	} else if g.TransitionTimer < g.TransitionTime && g.TransitioningUp == true {
-		g.WipeTex.Rect.X -= 2
-		g.WipeTex.Rect.Y -= 2
-		g.WipeTex.Rect.W += 4
-		g.WipeTex.Rect.H += 4
+		scale := mathhelper.ScaleBetween(g.TransitionTimer, 0, 1, 0, g.TransitionTime)
+
+		g.WipeTex.Rect.X = int32(g.WinWidth)/2 - int32(float64(g.WinWidth/2)*scale)
+		g.WipeTex.Rect.Y = int32(g.WinHeight)/2 - int32(float64(g.WinHeight/2)*scale)
+		g.WipeTex.Rect.W = int32(float64(g.WinWidth) * scale)
+		g.WipeTex.Rect.H = int32(float64(g.WinHeight) * scale)
 
 		g.TransitionTimer += time
 	} else if g.TransitionTimer < g.TransitionTime && g.TransitioningDown == true {
-		g.WipeTex.Rect.X += 2
-		g.WipeTex.Rect.Y += 2
-		g.WipeTex.Rect.W -= 4
-		g.WipeTex.Rect.H -= 4
+		scale := mathhelper.ScaleBetween(g.TransitionTimer, 0, 1, 0, g.TransitionTime)
+
+		g.WipeTex.Rect.X = int32(float64(g.WinWidth/2) * scale)
+		g.WipeTex.Rect.Y = int32(float64(g.WinHeight/2) * scale)
+		g.WipeTex.Rect.W = int32(g.WinWidth) - int32(float64(g.WinWidth)*scale)
+		g.WipeTex.Rect.H = int32(g.WinHeight) - int32(float64(g.WinHeight)*scale)
 
 		g.TransitionTimer += time
 	}

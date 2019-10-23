@@ -61,7 +61,7 @@ func main() {
 	mouseState := guicontrols.GetMouseState()
 
 	// Initialize GameState
-	gameStateTransition := gamestatetransition.NewGameStateTransition(WinWidth, WinHeight, gamestate.StartUp, gamestate.TitleScreen, gamestate.StartUp, 1000, renderer)
+	gameStateTransition := gamestatetransition.NewGameStateTransition(WinWidth, WinHeight, gamestate.StartUp, gamestate.TitleScreen, gamestate.StartUp, 500, renderer)
 
 	// TitleScreen variable
 	var t *titlescreen.TitleScreen
@@ -95,10 +95,6 @@ func main() {
 		case gamestate.StartUp:
 			// Initialize titlescreen
 			t = titlescreen.NewTitleScreen(WinWidth, WinHeight, WinDepth, gameStateTransition, mouseState, 10, renderer)
-			//gameStateTransition.Transitioning = true
-			//gameStateTransition.ToState = gamestate.TitleScreen
-			//gameStateTransition.Update(elapsedTime)
-			//gameStateTransition.Draw(renderer)
 			gameStateTransition.TransitioningDown = true
 			gameStateTransition.CurrentGameState = gamestate.TitleScreen
 		case gamestate.TitleScreen:
@@ -128,14 +124,17 @@ func main() {
 			// Get Keyboard Input
 			if gameStateTransition.Transitioning == false {
 				getKeyboardState(g)
-			} else {
-				gameStateTransition.Update(elapsedTime)
-				gameStateTransition.Draw(renderer)
 			}
 
 			// Draw gameboard
 			g.Update(elapsedTime)
 			g.Draw(renderer)
+
+			// Draw transition
+			if gameStateTransition.TransitioningDown == true || gameStateTransition.TransitioningUp == true {
+				gameStateTransition.Update(elapsedTime)
+				gameStateTransition.Draw(renderer)
+			}
 		case gamestate.QuitGame:
 			return
 		default:

@@ -153,19 +153,19 @@ func (t *TitleScreen) Update(time float64) {
 
 	// Change to MainGame if the start button is clicked
 	if t.StartButton.WasLeftClicked == true {
-		t.CurrentGameState.Transitioning = true
+		t.CurrentGameState.TransitioningUp = true
 		t.CurrentGameState.ToState = gamestate.MainGame
 	}
 
 	// Change to Options screen if the start button is clicked
 	if t.OptionsButton.WasLeftClicked == true {
-		t.CurrentGameState.Transitioning = true
+		t.CurrentGameState.TransitioningUp = true
 		t.CurrentGameState.ToState = gamestate.OptionsScreen
 	}
 
 	// Quit the game if the quit button is clicked
 	if t.QuitButton.WasLeftClicked == true {
-		t.CurrentGameState.Transitioning = true
+		t.CurrentGameState.TransitioningUp = true
 		t.CurrentGameState.ToState = gamestate.QuitGame
 	}
 

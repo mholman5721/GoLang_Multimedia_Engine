@@ -27,7 +27,7 @@ type TitleScreen struct {
 	QuitButton       *guicontrols.TextButton
 }
 
-// NewTitleScreen is a gameboard constructor
+// NewTitleScreen is a title screen constructor
 func NewTitleScreen(winWidth, winHeight, winDepth int, gamestate *gamestatetransition.GameStateTransition, mousestate *guicontrols.MouseState, numBlocks int, renderer *sdl.Renderer) *TitleScreen {
 
 	t := &TitleScreen{}

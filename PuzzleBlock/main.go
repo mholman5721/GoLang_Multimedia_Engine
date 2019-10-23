@@ -5,6 +5,7 @@ import (
 	"golang-games/PuzzleBlock/gamestate"
 	"golang-games/PuzzleBlock/gamestatetransition"
 	"golang-games/PuzzleBlock/guicontrols"
+	"golang-games/PuzzleBlock/optionsscreen"
 	"golang-games/PuzzleBlock/titlescreen"
 	"math/rand"
 	"time"
@@ -69,6 +70,7 @@ func main() {
 
 	// TitleScreen variable
 	var t *titlescreen.TitleScreen
+	var o *optionsscreen.OptionsScreen
 
 	// Initialize gameboard
 	g := gameboard.NewGameBoard(WinWidth, WinHeight, WinDepth, gameStateTransition, 19, 10, 7, 12, renderer)
@@ -99,12 +101,13 @@ func main() {
 		case gamestate.StartUp:
 			// Initialize titlescreen
 			t = titlescreen.NewTitleScreen(WinWidth, WinHeight, WinDepth, gameStateTransition, mouseState, 10, renderer)
+			o = optionsscreen.NewOptionsScreen(WinWidth, WinHeight, WinDepth, gameStateTransition, mouseState, renderer)
 			gameStateTransition.TransitioningDown = true
 			gameStateTransition.CurrentGameState = gamestate.TitleScreen
 			window.SetTitle("PuzzleBlock")
 		case gamestate.TitleScreen:
 			// Get Mouse Input
-			if gameStateTransition.TransitioningDown == false {
+			if gameStateTransition.TransitioningDown == false && gameStateTransition.TransitioningDown == false {
 				mouseState.Update()
 			}
 
@@ -119,9 +122,13 @@ func main() {
 			}
 		case gamestate.OptionsScreen:
 			// Get Mouse Input
-			if gameStateTransition.Transitioning == false {
+			if gameStateTransition.Transitioning == false && gameStateTransition.TransitioningDown == false {
 				mouseState.Update()
 			}
+
+			// Draw optionsscreen
+			o.Update(elapsedTime)
+			o.Draw(renderer)
 
 			// Draw transition
 			if gameStateTransition.TransitioningDown == true || gameStateTransition.TransitioningUp == true {
@@ -130,7 +137,7 @@ func main() {
 			}
 		case gamestate.MainGame:
 			// Get Keyboard Input
-			if gameStateTransition.Transitioning == false {
+			if gameStateTransition.Transitioning == false && gameStateTransition.TransitioningDown == false {
 				getKeyboardState(g)
 			}
 

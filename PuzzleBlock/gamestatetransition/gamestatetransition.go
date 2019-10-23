@@ -13,7 +13,7 @@ type GameStateTransition struct {
 	WinHeight         int
 	FromState         gamestate.GameState
 	ToState           gamestate.GameState
-	CurrentGameState  *gamestate.GameState
+	CurrentGameState  gamestate.GameState
 	WipeTex           *texturedrawing.SinglePixelTexture
 	TransitioningUp   bool
 	TransitioningDown bool
@@ -23,37 +23,36 @@ type GameStateTransition struct {
 }
 
 // NewGameStateTransition creates a new GameStateTransition struct
-func NewGameStateTransition(winWidth, winHeight int, fromstate gamestate.GameState, tostate gamestate.GameState, currentstate *gamestate.GameState, transitiontime float64, renderer *sdl.Renderer) *GameStateTransition {
+func NewGameStateTransition(winWidth, winHeight int, fromstate gamestate.GameState, tostate gamestate.GameState, currentstate gamestate.GameState, transitiontime float64, renderer *sdl.Renderer) *GameStateTransition {
 
-	t := texturedrawing.NewSinglePixelTexture(sdl.Color{R: 0, G: 0, B: 0, A: 0}, sdl.Rect{X: int32(winWidth / 2), Y: int32(winHeight / 2), W: 1, H: 1}, renderer)
+	t := texturedrawing.NewSinglePixelTexture(sdl.Color{R: 255, G: 0, B: 255, A: 255}, sdl.Rect{X: 0, Y: 0, W: int32(winWidth), H: int32(winHeight)}, renderer)
 
-	return &GameStateTransition{winWidth, winHeight, fromstate, tostate, currentstate, t, false, false, transitiontime, 0}
+	return &GameStateTransition{winWidth, winHeight, fromstate, tostate, currentstate, t, false, false, false, transitiontime, 0}
 }
 
 // Update updates the state transition
 func (g *GameStateTransition) Update(time float64) {
-	if g.TransitionTimer >= g.TransitionTime && g.Transitioning == true {
-		g.Transitioning = false
-		g.FromState = g.CurrentGameState
-		g.CurrentGameState = g.ToState
-		/*switch g.CurrentGameState {
-		case gamestate.StartUp:
-			g.ToState = gamestate.TitleScreen
-		case gamestate.TitleScreen:
-			g.ToState = gamestate.MainGame
-		case gamestate.MainGame:
-			g.ToState = gamestate.TitleScreen
-		case gamestate.OptionsScreen:
-			g.ToState = gamestate.TitleScreen
-		case gamestate.QuitGame:
-		default:
-		}*/
+	if g.TransitionTimer >= g.TransitionTime && g.TransitioningUp == true {
+		g.TransitioningUp = false
+
 		g.TransitionTimer = 0
-	} else if g.TransitionTimer < g.TransitionTime && g.Transitioning == true {
-		/*g.WipeTex.Rect.X -= 10
-		g.WipeTex.Rect.Y -= 10
-		g.WipeTex.Rect.W += 10
-		g.WipeTex.Rect.H += 10*/
+
+	} else if g.TransitionTimer >= g.TransitionTime && g.TransitioningDown == true {
+		g.TransitioningDown = false
+
+		g.TransitionTimer = 0
+	} else if g.TransitionTimer < g.TransitionTime && g.TransitioningUp == true {
+		g.WipeTex.Rect.X -= 2
+		g.WipeTex.Rect.Y -= 2
+		g.WipeTex.Rect.W += 4
+		g.WipeTex.Rect.H += 4
+
+		g.TransitionTimer += time
+	} else if g.TransitionTimer < g.TransitionTime && g.TransitioningDown == true {
+		g.WipeTex.Rect.X += 2
+		g.WipeTex.Rect.Y += 2
+		g.WipeTex.Rect.W -= 4
+		g.WipeTex.Rect.H -= 4
 
 		g.TransitionTimer += time
 	}
@@ -61,5 +60,5 @@ func (g *GameStateTransition) Update(time float64) {
 
 // Draw draws the WipeTex for the transition
 func (g *GameStateTransition) Draw(renderer *sdl.Renderer) {
-
+	g.WipeTex.Draw(renderer)
 }

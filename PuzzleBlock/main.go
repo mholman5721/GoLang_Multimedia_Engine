@@ -61,7 +61,7 @@ func main() {
 	mouseState := guicontrols.GetMouseState()
 
 	// Initialize GameState
-	gameStateTransition := gamestatetransition.NewGameStateTransition(WinWidth, WinHeight, gamestate.StartUp, gamestate.TitleScreen, gamestate.StartUp, 200, renderer)
+	gameStateTransition := gamestatetransition.NewGameStateTransition(WinWidth, WinHeight, gamestate.StartUp, gamestate.TitleScreen, gamestate.StartUp, 1000, renderer)
 
 	// TitleScreen variable
 	var t *titlescreen.TitleScreen
@@ -95,22 +95,27 @@ func main() {
 		case gamestate.StartUp:
 			// Initialize titlescreen
 			t = titlescreen.NewTitleScreen(WinWidth, WinHeight, WinDepth, gameStateTransition, mouseState, 10, renderer)
-			gameStateTransition.Transitioning = true
-			gameStateTransition.ToState = gamestate.TitleScreen
-			gameStateTransition.Update(elapsedTime)
-			gameStateTransition.Draw(renderer)
+			//gameStateTransition.Transitioning = true
+			//gameStateTransition.ToState = gamestate.TitleScreen
+			//gameStateTransition.Update(elapsedTime)
+			//gameStateTransition.Draw(renderer)
+			gameStateTransition.TransitioningDown = true
+			gameStateTransition.CurrentGameState = gamestate.TitleScreen
 		case gamestate.TitleScreen:
 			// Get Mouse Input
-			if gameStateTransition.Transitioning == false {
+			if gameStateTransition.TransitioningDown == false {
 				mouseState.Update()
-			} else {
-				gameStateTransition.Update(elapsedTime)
-				gameStateTransition.Draw(renderer)
 			}
 
 			// Draw titlescreen
 			t.Update(elapsedTime)
 			t.Draw(renderer)
+
+			// Draw transition
+			if gameStateTransition.TransitioningDown == true || gameStateTransition.TransitioningUp == true {
+				gameStateTransition.Update(elapsedTime)
+				gameStateTransition.Draw(renderer)
+			}
 		case gamestate.OptionsScreen:
 			// Get Mouse Input
 			if gameStateTransition.Transitioning == false {

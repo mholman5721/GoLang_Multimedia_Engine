@@ -5,6 +5,7 @@ import (
 	"golang-games/PuzzleBlock/gamestate"
 	"golang-games/PuzzleBlock/gamestatetransition"
 	"golang-games/PuzzleBlock/guicontrols"
+	"golang-games/PuzzleBlock/musicplayer"
 	"golang-games/PuzzleBlock/sprite"
 	"vec3"
 
@@ -13,28 +14,39 @@ import (
 
 // OptionsScreen is a struct that contains all the sprite information for the options screen
 type OptionsScreen struct {
-	CurrentGameState *gamestatetransition.GameStateTransition
-	MouseState       *guicontrols.MouseState
-	WinWidth         int
-	WinHeight        int
-	Background       *sprite.Sprite
-	TextFont         *font.TTFFont
-	TitleText        *font.TTFString
-	/*SoundVolumeUpButton   *guicontrols.TextButton
-	SoundVolumeDownButton *guicontrols.TextButton
-	MusicVolumeUpButton   *guicontrols.TextButton
-	MusicVolumeDownButton *guicontrols.TextButton*/
-	BackButton *guicontrols.TextButton
+	CurrentGameState      *gamestatetransition.GameStateTransition
+	MouseState            *guicontrols.MouseState
+	MusicPlayer           *musicplayer.MusicPlayer
+	WinWidth              int
+	WinHeight             int
+	Background            *sprite.Sprite
+	TextFont              *font.TTFFont
+	TitleText             *font.TTFString
+	CurrentTune           int
+	InGameTuneText        *font.TTFString
+	TuneUpButton          *guicontrols.SpriteButton
+	TuneDownButton        *guicontrols.SpriteButton
+	SoundVolume           int
+	SoundVoumeText        *font.TTFString
+	SoundVolumeUpButton   *guicontrols.SpriteButton
+	SoundVolumeDownButton *guicontrols.SpriteButton
+	MusicVolume           int
+	MusicVolumeText       *font.TTFString
+	MusicVolumeUpButton   *guicontrols.SpriteButton
+	MusicVolumeDownButton *guicontrols.SpriteButton
+	BackButton            *guicontrols.TextButton
 }
 
 // NewOptionsScreen is an options screen constructor
-func NewOptionsScreen(winWidth, winHeight, winDepth int, gamestate *gamestatetransition.GameStateTransition, mousestate *guicontrols.MouseState, renderer *sdl.Renderer) *OptionsScreen {
+func NewOptionsScreen(winWidth, winHeight, winDepth int, gamestate *gamestatetransition.GameStateTransition, mousestate *guicontrols.MouseState, musicplayer *musicplayer.MusicPlayer, renderer *sdl.Renderer) *OptionsScreen {
 
 	o := &OptionsScreen{}
 
 	o.CurrentGameState = gamestate
 
 	o.MouseState = mousestate
+
+	o.MusicPlayer = musicplayer
 
 	o.WinWidth = winWidth
 	o.WinHeight = winHeight
@@ -69,6 +81,126 @@ func NewOptionsScreen(winWidth, winHeight, winDepth int, gamestate *gamestatetra
 		renderer)
 	o.TitleText.SetCenterX()
 
+	o.CurrentTune = 0
+
+	// Set the tune text
+	o.InGameTuneText = font.NewTTFString("In-Game Music",
+		font.FontLarge,
+		sdl.Color{R: 255, G: 255, B: 255, A: 255},
+		vec3.Vector3{X: float32(o.WinWidth) * 0.35, Y: float32(o.WinHeight) * 0.31, Z: 0},
+		o.TextFont,
+		renderer)
+
+	o.TuneUpButton = guicontrols.NewSpriteButton(o.WinWidth,
+		o.WinHeight,
+		"assets/arrowRight.png",
+		sdl.Color{R: 128, G: 128, B: 128, A: 192},
+		sdl.Color{R: 128, G: 128, B: 192, A: 192},
+		sdl.Color{R: 0, G: 0, B: 255, A: 192},
+		vec3.Vector3{X: float32(o.WinWidth) * 0.25, Y: float32(o.WinHeight) * 0.31, Z: 0},
+		0.1,
+		100,
+		64,
+		64,
+		1,
+		1,
+		renderer)
+
+	o.TuneDownButton = guicontrols.NewSpriteButton(o.WinWidth,
+		o.WinHeight,
+		"assets/arrowLeft.png",
+		sdl.Color{R: 128, G: 128, B: 128, A: 192},
+		sdl.Color{R: 128, G: 128, B: 192, A: 192},
+		sdl.Color{R: 0, G: 0, B: 255, A: 192},
+		vec3.Vector3{X: float32(o.WinWidth) * 0.05, Y: float32(o.WinHeight) * 0.31, Z: 0},
+		0.1,
+		100,
+		64,
+		64,
+		1,
+		1,
+		renderer)
+
+	o.SoundVolume = 50
+
+	// Set the sound volume text
+	o.SoundVoumeText = font.NewTTFString("Sound Volume",
+		font.FontLarge,
+		sdl.Color{R: 255, G: 255, B: 255, A: 255},
+		vec3.Vector3{X: float32(o.WinWidth) * 0.35, Y: float32(o.WinHeight) * 0.48, Z: 0},
+		o.TextFont,
+		renderer)
+
+	o.SoundVolumeUpButton = guicontrols.NewSpriteButton(o.WinWidth,
+		o.WinHeight,
+		"assets/arrowRight.png",
+		sdl.Color{R: 128, G: 128, B: 128, A: 192},
+		sdl.Color{R: 128, G: 128, B: 192, A: 192},
+		sdl.Color{R: 0, G: 0, B: 255, A: 192},
+		vec3.Vector3{X: float32(o.WinWidth) * 0.25, Y: float32(o.WinHeight) * 0.48, Z: 0},
+		0.1,
+		100,
+		64,
+		64,
+		1,
+		1,
+		renderer)
+
+	o.SoundVolumeDownButton = guicontrols.NewSpriteButton(o.WinWidth,
+		o.WinHeight,
+		"assets/arrowLeft.png",
+		sdl.Color{R: 128, G: 128, B: 128, A: 192},
+		sdl.Color{R: 128, G: 128, B: 192, A: 192},
+		sdl.Color{R: 0, G: 0, B: 255, A: 192},
+		vec3.Vector3{X: float32(o.WinWidth) * 0.05, Y: float32(o.WinHeight) * 0.48, Z: 0},
+		0.1,
+		100,
+		64,
+		64,
+		1,
+		1,
+		renderer)
+
+	o.MusicVolume = 50
+
+	// Set the music volume text
+	o.MusicVolumeText = font.NewTTFString("Music Volume",
+		font.FontLarge,
+		sdl.Color{R: 255, G: 255, B: 255, A: 255},
+		vec3.Vector3{X: float32(o.WinWidth) * 0.35, Y: float32(o.WinHeight) * 0.65, Z: 0},
+		o.TextFont,
+		renderer)
+
+	o.MusicVolumeUpButton = guicontrols.NewSpriteButton(o.WinWidth,
+		o.WinHeight,
+		"assets/arrowRight.png",
+		sdl.Color{R: 128, G: 128, B: 128, A: 192},
+		sdl.Color{R: 128, G: 128, B: 192, A: 192},
+		sdl.Color{R: 0, G: 0, B: 255, A: 192},
+		vec3.Vector3{X: float32(o.WinWidth) * 0.25, Y: float32(o.WinHeight) * 0.65, Z: 0},
+		0.1,
+		100,
+		64,
+		64,
+		1,
+		1,
+		renderer)
+
+	o.MusicVolumeDownButton = guicontrols.NewSpriteButton(o.WinWidth,
+		o.WinHeight,
+		"assets/arrowLeft.png",
+		sdl.Color{R: 128, G: 128, B: 128, A: 192},
+		sdl.Color{R: 128, G: 128, B: 192, A: 192},
+		sdl.Color{R: 0, G: 0, B: 255, A: 192},
+		vec3.Vector3{X: float32(o.WinWidth) * 0.05, Y: float32(o.WinHeight) * 0.65, Z: 0},
+		0.1,
+		100,
+		64,
+		64,
+		1,
+		1,
+		renderer)
+
 	o.BackButton = guicontrols.NewTextButton(o.WinWidth,
 		o.WinHeight,
 		"   Back   ",
@@ -92,12 +224,68 @@ func (o *OptionsScreen) Update(time float64) {
 
 	// Return to the title screen if back button is clicked
 	if o.BackButton.WasLeftClicked == true {
+		o.MusicPlayer.FutureTune = 0
+		o.MusicPlayer.PastTune = o.MusicPlayer.CurrentTune
 		o.CurrentGameState.TransitioningUp = true
 		o.CurrentGameState.ToState = gamestate.TitleScreen
 	}
 
+	// Set the appropriate tune
+	if o.TuneUpButton.WasLeftClicked == true {
+		o.MusicPlayer.CurrentTune++
+		if o.MusicPlayer.CurrentTune > o.MusicPlayer.NumTunes-1 {
+			o.MusicPlayer.CurrentTune = 0
+		}
+		o.MusicPlayer.PlayTune(o.MusicPlayer.CurrentTune)
+	}
+
+	if o.TuneDownButton.WasLeftClicked == true {
+		o.MusicPlayer.CurrentTune--
+		if o.MusicPlayer.CurrentTune < 0 {
+			o.MusicPlayer.CurrentTune = o.MusicPlayer.NumTunes - 1
+		}
+		o.MusicPlayer.PlayTune(o.MusicPlayer.CurrentTune)
+	}
+
+	// Set volumes when appropriate button is clicked
+	if o.SoundVolumeUpButton.WasLeftClicked == true {
+		o.SoundVolume += 10
+		if o.SoundVolume > 100 {
+			o.SoundVolume = 100
+		}
+	}
+
+	if o.SoundVolumeDownButton.WasLeftClicked == true {
+		o.SoundVolume -= 10
+		if o.SoundVolume < 0 {
+			o.SoundVolume = 0
+		}
+	}
+
+	if o.MusicVolumeUpButton.WasLeftClicked == true {
+		o.MusicVolume += 10
+		if o.MusicVolume > 100 {
+			o.MusicVolume = 100
+		}
+		o.MusicPlayer.SetVolume(o.MusicVolume)
+	}
+
+	if o.MusicVolumeDownButton.WasLeftClicked == true {
+		o.MusicVolume -= 10
+		if o.MusicVolume < 0 {
+			o.MusicVolume = 0
+		}
+		o.MusicPlayer.SetVolume(o.MusicVolume)
+	}
+
 	// Update the buttons
 	o.BackButton.Update(o.MouseState, time)
+	o.TuneUpButton.Update(o.MouseState, time)
+	o.TuneDownButton.Update(o.MouseState, time)
+	o.SoundVolumeUpButton.Update(o.MouseState, time)
+	o.SoundVolumeDownButton.Update(o.MouseState, time)
+	o.MusicVolumeUpButton.Update(o.MouseState, time)
+	o.MusicVolumeDownButton.Update(o.MouseState, time)
 }
 
 // Draw draws all the objects on the title screen
@@ -108,7 +296,16 @@ func (o *OptionsScreen) Draw(renderer *sdl.Renderer) {
 
 	// Draw the text
 	o.TitleText.Draw(renderer)
+	o.InGameTuneText.Draw(renderer)
+	o.SoundVoumeText.Draw(renderer)
+	o.MusicVolumeText.Draw(renderer)
 
 	// Draw the buttons
 	o.BackButton.Draw(renderer)
+	o.TuneUpButton.Draw(renderer)
+	o.TuneDownButton.Draw(renderer)
+	o.SoundVolumeUpButton.Draw(renderer)
+	o.SoundVolumeDownButton.Draw(renderer)
+	o.MusicVolumeUpButton.Draw(renderer)
+	o.MusicVolumeDownButton.Draw(renderer)
 }

@@ -3,6 +3,7 @@ package gamestatetransition
 import (
 	"golang-games/PuzzleBlock/gamestate"
 	"golang-games/PuzzleBlock/mathhelper"
+	"golang-games/PuzzleBlock/musicplayer"
 	"golang-games/PuzzleBlock/texturedrawing"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -12,6 +13,7 @@ import (
 type GameStateTransition struct {
 	WinWidth          int
 	WinHeight         int
+	MusicPlayer       *musicplayer.MusicPlayer
 	FromState         gamestate.GameState
 	ToState           gamestate.GameState
 	CurrentGameState  gamestate.GameState
@@ -24,11 +26,11 @@ type GameStateTransition struct {
 }
 
 // NewGameStateTransition creates a new GameStateTransition struct
-func NewGameStateTransition(winWidth, winHeight int, fromstate gamestate.GameState, tostate gamestate.GameState, currentstate gamestate.GameState, transitiontime float64, renderer *sdl.Renderer) *GameStateTransition {
+func NewGameStateTransition(winWidth, winHeight int, musicplayer *musicplayer.MusicPlayer, fromstate gamestate.GameState, tostate gamestate.GameState, currentstate gamestate.GameState, transitiontime float64, renderer *sdl.Renderer) *GameStateTransition {
 
 	t := texturedrawing.NewSinglePixelTexture(sdl.Color{R: 0, G: 0, B: 0, A: 255}, sdl.Rect{X: 0, Y: 0, W: int32(winWidth), H: int32(winHeight)}, renderer)
 
-	return &GameStateTransition{winWidth, winHeight, fromstate, tostate, currentstate, t, false, false, false, transitiontime, 0}
+	return &GameStateTransition{winWidth, winHeight, musicplayer, fromstate, tostate, currentstate, t, false, false, false, transitiontime, 0}
 }
 
 // Update updates the state transition
@@ -38,6 +40,8 @@ func (g *GameStateTransition) Update(time float64) {
 		g.TransitioningDown = true
 		g.FromState = g.CurrentGameState
 		g.CurrentGameState = g.ToState
+		g.MusicPlayer.PlayTune(g.MusicPlayer.FutureTune)
+		g.MusicPlayer.CurrentTune = g.MusicPlayer.FutureTune
 
 		g.TransitionTimer = 0
 	} else if g.TransitionTimer >= g.TransitionTime && g.TransitioningDown == true {

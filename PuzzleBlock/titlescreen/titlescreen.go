@@ -5,6 +5,7 @@ import (
 	"golang-games/PuzzleBlock/gamestate"
 	"golang-games/PuzzleBlock/gamestatetransition"
 	"golang-games/PuzzleBlock/guicontrols"
+	"golang-games/PuzzleBlock/musicplayer"
 	"golang-games/PuzzleBlock/sprite"
 	"math/rand"
 	"vec3"
@@ -16,6 +17,7 @@ import (
 type TitleScreen struct {
 	CurrentGameState *gamestatetransition.GameStateTransition
 	MouseState       *guicontrols.MouseState
+	MusicPlayer      *musicplayer.MusicPlayer
 	WinWidth         int
 	WinHeight        int
 	Blocks           []*sprite.Sprite
@@ -28,13 +30,15 @@ type TitleScreen struct {
 }
 
 // NewTitleScreen is a title screen constructor
-func NewTitleScreen(winWidth, winHeight, winDepth int, gamestate *gamestatetransition.GameStateTransition, mousestate *guicontrols.MouseState, numBlocks int, renderer *sdl.Renderer) *TitleScreen {
+func NewTitleScreen(winWidth, winHeight, winDepth, numBlocks int, gamestate *gamestatetransition.GameStateTransition, mousestate *guicontrols.MouseState, musicplayer *musicplayer.MusicPlayer, renderer *sdl.Renderer) *TitleScreen {
 
 	t := &TitleScreen{}
 
 	t.CurrentGameState = gamestate
 
 	t.MouseState = mousestate
+
+	t.MusicPlayer = musicplayer
 
 	t.WinWidth = winWidth
 	t.WinHeight = winHeight
@@ -153,12 +157,14 @@ func (t *TitleScreen) Update(time float64) {
 
 	// Change to MainGame if the start button is clicked
 	if t.StartButton.WasLeftClicked == true {
+		t.MusicPlayer.FutureTune = t.MusicPlayer.PastTune
 		t.CurrentGameState.TransitioningUp = true
 		t.CurrentGameState.ToState = gamestate.MainGame
 	}
 
 	// Change to Options screen if the start button is clicked
 	if t.OptionsButton.WasLeftClicked == true {
+		t.MusicPlayer.FutureTune = t.MusicPlayer.PastTune
 		t.CurrentGameState.TransitioningUp = true
 		t.CurrentGameState.ToState = gamestate.OptionsScreen
 	}

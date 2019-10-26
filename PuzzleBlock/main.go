@@ -5,6 +5,7 @@ import (
 	"golang-games/PuzzleBlock/gamestate"
 	"golang-games/PuzzleBlock/gamestatetransition"
 	"golang-games/PuzzleBlock/guicontrols"
+	"golang-games/PuzzleBlock/musicplayer"
 	"golang-games/PuzzleBlock/optionsscreen"
 	"golang-games/PuzzleBlock/titlescreen"
 	"math/rand"
@@ -30,10 +31,15 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+
+	err = mix.OpenAudio(22050, mix.DEFAULT_FORMAT, 2, 4096)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func initRendererAndWindow() (*sdl.Renderer, *sdl.Window) {
-	window, err := sdl.CreateWindow("Loading...", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, int32(WinWidth), int32(WinHeight), sdl.WINDOW_SHOWN)
+	window, err := sdl.CreateWindow("Loading", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, int32(WinWidth), int32(WinHeight), sdl.WINDOW_SHOWN)
 	if err != nil {
 		panic(err)
 	}
@@ -65,15 +71,20 @@ func main() {
 	// Set Random Seed
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	// Initialize GameState
-	gameStateTransition := gamestatetransition.NewGameStateTransition(WinWidth, WinHeight, gamestate.StartUp, gamestate.TitleScreen, gamestate.StartUp, 500, renderer)
-
 	// TitleScreen variable
 	var t *titlescreen.TitleScreen
+
+	// OptionsScreen variable
 	var o *optionsscreen.OptionsScreen
 
+	// MusicPlayer variable
+	m := musicplayer.NewMusicPlayer("assets/tune", 4)
+
+	// Initialize GameState
+	gameStateTransition := gamestatetransition.NewGameStateTransition(WinWidth, WinHeight, m, gamestate.StartUp, gamestate.TitleScreen, gamestate.StartUp, 500, renderer)
+
 	// Initialize gameboard
-	g := gameboard.NewGameBoard(WinWidth, WinHeight, WinDepth, gameStateTransition, 19, 10, 7, 12, renderer)
+	g := gameboard.NewGameBoard(WinWidth, WinHeight, WinDepth, gameStateTransition, 19, 10, 7, 12, m, renderer)
 
 	// Main game loop
 	for {
@@ -100,11 +111,22 @@ func main() {
 		switch gameStateTransition.CurrentGameState {
 		case gamestate.StartUp:
 			// Initialize titlescreen
-			t = titlescreen.NewTitleScreen(WinWidth, WinHeight, WinDepth, gameStateTransition, mouseState, 10, renderer)
-			o = optionsscreen.NewOptionsScreen(WinWidth, WinHeight, WinDepth, gameStateTransition, mouseState, renderer)
+			window.SetTitle("Loading.")
+			m.FutureTune = 1
+			m.PastTune = 1
+			m.SetVolume(50)
+			m.PlayTune(0)
+			window.SetTitle("Loading..")
+			t = titlescreen.NewTitleScreen(WinWidth, WinHeight, WinDepth, 10, gameStateTransition, mouseState, m, renderer)
+			window.SetTitle("Loading...")
+			o = optionsscreen.NewOptionsScreen(WinWidth, WinHeight, WinDepth, gameStateTransition, mouseState, m, renderer)
+			window.SetTitle("Loading.")
+			window.SetTitle("Loading..")
 			gameStateTransition.TransitioningDown = true
+			window.SetTitle("Loading...")
 			gameStateTransition.CurrentGameState = gamestate.TitleScreen
 			window.SetTitle("PuzzleBlock")
+			gameStateTransition.TransitionTimer = 0
 		case gamestate.TitleScreen:
 			// Get Mouse Input
 			if gameStateTransition.TransitioningDown == false && gameStateTransition.TransitioningDown == false {

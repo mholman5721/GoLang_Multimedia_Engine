@@ -4,6 +4,7 @@ import (
 	"golang-games/PuzzleBlock/font"
 	"golang-games/PuzzleBlock/gamestate"
 	"golang-games/PuzzleBlock/gamestatetransition"
+	"golang-games/PuzzleBlock/musicplayer"
 	"golang-games/PuzzleBlock/sprite"
 	"math/rand"
 	"strconv"
@@ -53,6 +54,7 @@ type Block struct {
 // GameBoard is a struct that contains all the sprite information for the game
 type GameBoard struct {
 	CurrentGameState           *gamestatetransition.GameStateTransition
+	MusicPlayer                *musicplayer.MusicPlayer
 	Blocks                     [][]Block
 	Background                 *sprite.Sprite
 	LevelValue                 int
@@ -167,12 +169,14 @@ func (g *GameBoard) Update(time float64) {
 				g.LevelValue = 1
 				g.ScoreValue = 0
 				g.DeGrayValue = 10
+				g.LevelFallingTime = float64(g.MaxLevelValue * 100)
 				g.LevelFallingTimer = 0
 				g.LevelPostFallTimer = 0
 				g.BlockFallingTimer = 0
 				g.BlocksFallingTimer = 0
 
 				// Change the game state
+				g.MusicPlayer.FutureTune = 0
 				g.CurrentGameState.TransitioningUp = true
 				g.CurrentGameState.ToState = gamestate.TitleScreen
 				break

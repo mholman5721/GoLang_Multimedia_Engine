@@ -15,7 +15,7 @@ type MusicPlayer struct {
 	CurrentTune   int
 	FutureTune    int
 	PastTune      int
-	volumePercent int
+	VolumePercent int
 }
 
 // NewMusicPlayer is a constructor for a new music player
@@ -35,7 +35,7 @@ func NewMusicPlayer(tunesBase string, numTunes int) *MusicPlayer {
 	m.CurrentTune = 0
 	m.FutureTune = 0
 	m.PastTune = 0
-	m.volumePercent = 100
+	m.VolumePercent = 100
 
 	return m
 }
@@ -47,11 +47,11 @@ func (m *MusicPlayer) PlayTune(tune int) {
 	}
 	m.CurrentTune = tune
 	m.tunes[tune].Play(0, -1)
-	m.tunes[tune].Volume(m.volumePercent)
+	m.tunes[tune].Volume(m.VolumePercent)
 }
 
 // SetVolume plays the specified tune in the specified way
 func (m *MusicPlayer) SetVolume(volume int) {
-	m.volumePercent = int(mathhelper.ScaleBetween(float64(volume), 0, 100, 0, 128))
-	m.tunes[m.CurrentTune].Volume(m.volumePercent)
+	m.VolumePercent = int(mathhelper.ScaleBetween(float64(volume), 0, 100, 0, 128))
+	m.tunes[m.CurrentTune].Volume(m.VolumePercent)
 }

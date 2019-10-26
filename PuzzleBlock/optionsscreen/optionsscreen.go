@@ -7,6 +7,7 @@ import (
 	"golang-games/PuzzleBlock/guicontrols"
 	"golang-games/PuzzleBlock/musicplayer"
 	"golang-games/PuzzleBlock/sprite"
+	"strconv"
 	"vec3"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -22,16 +23,21 @@ type OptionsScreen struct {
 	Background            *sprite.Sprite
 	TextFont              *font.TTFFont
 	TitleText             *font.TTFString
-	CurrentTune           int
+	PreviousCurrentTune   int
 	InGameTuneText        *font.TTFString
+	InGameTuneValueText   *font.TTFString
 	TuneUpButton          *guicontrols.SpriteButton
 	TuneDownButton        *guicontrols.SpriteButton
 	SoundVolume           int
-	SoundVoumeText        *font.TTFString
+	PreviousSoundVolume   int
+	SoundVolumeText       *font.TTFString
+	SoundVolumeValueText  *font.TTFString
 	SoundVolumeUpButton   *guicontrols.SpriteButton
 	SoundVolumeDownButton *guicontrols.SpriteButton
 	MusicVolume           int
+	PreviousMusicVolume   int
 	MusicVolumeText       *font.TTFString
+	MusicVolumeValueText  *font.TTFString
 	MusicVolumeUpButton   *guicontrols.SpriteButton
 	MusicVolumeDownButton *guicontrols.SpriteButton
 	BackButton            *guicontrols.TextButton
@@ -81,13 +87,21 @@ func NewOptionsScreen(winWidth, winHeight, winDepth int, gamestate *gamestatetra
 		renderer)
 	o.TitleText.SetCenterX()
 
-	o.CurrentTune = 0
+	o.PreviousCurrentTune = o.MusicPlayer.CurrentTune
 
 	// Set the tune text
 	o.InGameTuneText = font.NewTTFString("In-Game Music",
 		font.FontLarge,
 		sdl.Color{R: 255, G: 255, B: 255, A: 255},
 		vec3.Vector3{X: float32(o.WinWidth) * 0.35, Y: float32(o.WinHeight) * 0.31, Z: 0},
+		o.TextFont,
+		renderer)
+
+	// Set the tune value text
+	o.InGameTuneValueText = font.NewTTFString("Music "+strconv.Itoa(o.MusicPlayer.CurrentTune),
+		font.FontMedium,
+		sdl.Color{R: 255, G: 255, B: 255, A: 255},
+		vec3.Vector3{X: float32(o.WinWidth) * 0.115, Y: float32(o.WinHeight) * 0.33, Z: 0},
 		o.TextFont,
 		renderer)
 
@@ -122,12 +136,21 @@ func NewOptionsScreen(winWidth, winHeight, winDepth int, gamestate *gamestatetra
 		renderer)
 
 	o.SoundVolume = 50
+	o.PreviousSoundVolume = o.SoundVolume
 
 	// Set the sound volume text
-	o.SoundVoumeText = font.NewTTFString("Sound Volume",
+	o.SoundVolumeText = font.NewTTFString("Sound Volume",
 		font.FontLarge,
 		sdl.Color{R: 255, G: 255, B: 255, A: 255},
 		vec3.Vector3{X: float32(o.WinWidth) * 0.35, Y: float32(o.WinHeight) * 0.48, Z: 0},
+		o.TextFont,
+		renderer)
+
+	// Set the sound volume value text
+	o.SoundVolumeValueText = font.NewTTFString(strconv.Itoa(o.SoundVolume)+" %",
+		font.FontMedium,
+		sdl.Color{R: 255, G: 255, B: 255, A: 255},
+		vec3.Vector3{X: float32(o.WinWidth) * 0.14, Y: float32(o.WinHeight) * 0.50, Z: 0},
 		o.TextFont,
 		renderer)
 
@@ -162,12 +185,21 @@ func NewOptionsScreen(winWidth, winHeight, winDepth int, gamestate *gamestatetra
 		renderer)
 
 	o.MusicVolume = 50
+	o.PreviousMusicVolume = o.MusicVolume
 
 	// Set the music volume text
 	o.MusicVolumeText = font.NewTTFString("Music Volume",
 		font.FontLarge,
 		sdl.Color{R: 255, G: 255, B: 255, A: 255},
 		vec3.Vector3{X: float32(o.WinWidth) * 0.35, Y: float32(o.WinHeight) * 0.65, Z: 0},
+		o.TextFont,
+		renderer)
+
+	// Set the music volume value text
+	o.MusicVolumeValueText = font.NewTTFString(strconv.Itoa(o.MusicVolume)+" %",
+		font.FontMedium,
+		sdl.Color{R: 255, G: 255, B: 255, A: 255},
+		vec3.Vector3{X: float32(o.WinWidth) * 0.14, Y: float32(o.WinHeight) * 0.67, Z: 0},
 		o.TextFont,
 		renderer)
 
@@ -237,6 +269,7 @@ func (o *OptionsScreen) Update(time float64) {
 			o.MusicPlayer.CurrentTune = 0
 		}
 		o.MusicPlayer.PlayTune(o.MusicPlayer.CurrentTune)
+		o.MusicPlayer.CurrentTune = o.MusicPlayer.CurrentTune
 	}
 
 	if o.TuneDownButton.WasLeftClicked == true {
@@ -245,6 +278,7 @@ func (o *OptionsScreen) Update(time float64) {
 			o.MusicPlayer.CurrentTune = o.MusicPlayer.NumTunes - 1
 		}
 		o.MusicPlayer.PlayTune(o.MusicPlayer.CurrentTune)
+		o.MusicPlayer.CurrentTune = o.MusicPlayer.CurrentTune
 	}
 
 	// Set volumes when appropriate button is clicked
@@ -294,11 +328,42 @@ func (o *OptionsScreen) Draw(renderer *sdl.Renderer) {
 	// Draw the background
 	o.Background.Draw(renderer)
 
+	// Change the display text depending on whether the underlying value has changed
+	if o.MusicPlayer.CurrentTune != o.PreviousCurrentTune {
+		o.InGameTuneValueText.ChangeStringTexture("Music "+strconv.Itoa(o.MusicPlayer.CurrentTune), font.FontMedium, sdl.Color{R: 255, G: 255, B: 255, A: 255}, renderer)
+		o.PreviousCurrentTune = o.MusicPlayer.CurrentTune
+	}
+
+	if o.SoundVolume != o.PreviousSoundVolume {
+		if o.SoundVolume == 100 {
+			o.SoundVolumeValueText.ChangeStringTexture(strconv.Itoa(o.SoundVolume)+"%", font.FontMedium, sdl.Color{R: 255, G: 255, B: 255, A: 255}, renderer)
+		} else if o.SoundVolume >= 10 && o.SoundVolume < 100 {
+			o.SoundVolumeValueText.ChangeStringTexture(strconv.Itoa(o.SoundVolume)+" %", font.FontMedium, sdl.Color{R: 255, G: 255, B: 255, A: 255}, renderer)
+		} else if o.SoundVolume < 10 {
+			o.SoundVolumeValueText.ChangeStringTexture(strconv.Itoa(o.SoundVolume)+"  %", font.FontMedium, sdl.Color{R: 255, G: 255, B: 255, A: 255}, renderer)
+		}
+		o.PreviousSoundVolume = o.SoundVolume
+	}
+
+	if o.MusicVolume != o.PreviousMusicVolume {
+		if o.MusicVolume == 100 {
+			o.MusicVolumeValueText.ChangeStringTexture(strconv.Itoa(o.MusicVolume)+"%", font.FontMedium, sdl.Color{R: 255, G: 255, B: 255, A: 255}, renderer)
+		} else if o.MusicVolume >= 10 && o.MusicVolume < 100 {
+			o.MusicVolumeValueText.ChangeStringTexture(strconv.Itoa(o.MusicVolume)+" %", font.FontMedium, sdl.Color{R: 255, G: 255, B: 255, A: 255}, renderer)
+		} else if o.MusicVolume < 10 {
+			o.MusicVolumeValueText.ChangeStringTexture(strconv.Itoa(o.MusicVolume)+"  %", font.FontMedium, sdl.Color{R: 255, G: 255, B: 255, A: 255}, renderer)
+		}
+		o.PreviousMusicVolume = o.MusicVolume
+	}
+
 	// Draw the text
 	o.TitleText.Draw(renderer)
 	o.InGameTuneText.Draw(renderer)
-	o.SoundVoumeText.Draw(renderer)
+	o.InGameTuneValueText.Draw(renderer)
+	o.SoundVolumeText.Draw(renderer)
+	o.SoundVolumeValueText.Draw(renderer)
 	o.MusicVolumeText.Draw(renderer)
+	o.MusicVolumeValueText.Draw(renderer)
 
 	// Draw the buttons
 	o.BackButton.Draw(renderer)

@@ -7,6 +7,7 @@ import (
 	"golang-games/PuzzleBlock/guicontrols"
 	"golang-games/PuzzleBlock/musicplayer"
 	"golang-games/PuzzleBlock/optionsscreen"
+	"golang-games/PuzzleBlock/soundplayer"
 	"golang-games/PuzzleBlock/titlescreen"
 	"math/rand"
 	"time"
@@ -80,6 +81,10 @@ func main() {
 	// MusicPlayer variable
 	m := musicplayer.NewMusicPlayer("assets/tune", 4)
 
+	// SoundPlayer variable
+	sounds := []string{"break1"}
+	s := soundplayer.NewSoundPlayer(sounds)
+
 	// Initialize GameState
 	gameStateTransition := gamestatetransition.NewGameStateTransition(WinWidth, WinHeight, m, gamestate.StartUp, gamestate.TitleScreen, gamestate.StartUp, 500, renderer)
 
@@ -119,7 +124,7 @@ func main() {
 			window.SetTitle("Loading..")
 			t = titlescreen.NewTitleScreen(WinWidth, WinHeight, WinDepth, 10, gameStateTransition, mouseState, m, renderer)
 			window.SetTitle("Loading...")
-			o = optionsscreen.NewOptionsScreen(WinWidth, WinHeight, WinDepth, gameStateTransition, mouseState, m, renderer)
+			o = optionsscreen.NewOptionsScreen(WinWidth, WinHeight, WinDepth, gameStateTransition, mouseState, m, s, renderer)
 			window.SetTitle("Loading.")
 			window.SetTitle("Loading..")
 			gameStateTransition.TransitioningDown = true
@@ -129,7 +134,7 @@ func main() {
 			gameStateTransition.TransitionTimer = 0
 		case gamestate.TitleScreen:
 			// Get Mouse Input
-			if gameStateTransition.TransitioningDown == false && gameStateTransition.TransitioningDown == false {
+			if gameStateTransition.TransitioningDown == false && gameStateTransition.TransitioningUp == false {
 				mouseState.Update()
 			}
 
@@ -144,7 +149,7 @@ func main() {
 			}
 		case gamestate.OptionsScreen:
 			// Get Mouse Input
-			if gameStateTransition.Transitioning == false && gameStateTransition.TransitioningDown == false {
+			if gameStateTransition.TransitioningDown == false && gameStateTransition.TransitioningUp == false {
 				mouseState.Update()
 			}
 
@@ -159,7 +164,7 @@ func main() {
 			}
 		case gamestate.MainGame:
 			// Get Keyboard Input
-			if gameStateTransition.Transitioning == false && gameStateTransition.TransitioningDown == false {
+			if gameStateTransition.TransitioningDown == false && gameStateTransition.TransitioningUp == false {
 				getKeyboardState(g)
 			}
 

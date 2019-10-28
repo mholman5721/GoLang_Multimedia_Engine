@@ -1,4 +1,4 @@
-package musicplayer
+package soundplayer
 
 import (
 	"golang-games/PuzzleBlock/mathhelper"
@@ -25,7 +25,7 @@ func NewSoundPlayer(sounds []string) *SoundPlayer {
 
 	for i := range sounds {
 		name := sounds[i]
-		file := name + ".ogg"
+		file := "assets/" + name + ".ogg"
 		s.soundNames = append(s.soundNames, name)
 		s.sounds[name], err = mix.LoadWAV(file)
 		if err != nil {
@@ -40,7 +40,7 @@ func NewSoundPlayer(sounds []string) *SoundPlayer {
 
 // PlaySound plays the specified tune in the specified way
 func (s *SoundPlayer) PlaySound(sound string) {
-	s.sounds[sound].Play(-1, -1)
+	s.sounds[sound].Play(-1, 0)
 }
 
 // SetVolume plays the specified tune in the specified way

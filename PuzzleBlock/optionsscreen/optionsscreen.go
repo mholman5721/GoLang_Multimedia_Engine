@@ -6,6 +6,7 @@ import (
 	"golang-games/PuzzleBlock/gamestatetransition"
 	"golang-games/PuzzleBlock/guicontrols"
 	"golang-games/PuzzleBlock/musicplayer"
+	"golang-games/PuzzleBlock/soundplayer"
 	"golang-games/PuzzleBlock/sprite"
 	"strconv"
 	"vec3"
@@ -18,6 +19,7 @@ type OptionsScreen struct {
 	CurrentGameState      *gamestatetransition.GameStateTransition
 	MouseState            *guicontrols.MouseState
 	MusicPlayer           *musicplayer.MusicPlayer
+	SoundPlayer           *soundplayer.SoundPlayer
 	WinWidth              int
 	WinHeight             int
 	Background            *sprite.Sprite
@@ -44,7 +46,7 @@ type OptionsScreen struct {
 }
 
 // NewOptionsScreen is an options screen constructor
-func NewOptionsScreen(winWidth, winHeight, winDepth int, gamestate *gamestatetransition.GameStateTransition, mousestate *guicontrols.MouseState, musicplayer *musicplayer.MusicPlayer, renderer *sdl.Renderer) *OptionsScreen {
+func NewOptionsScreen(winWidth, winHeight, winDepth int, gamestate *gamestatetransition.GameStateTransition, mousestate *guicontrols.MouseState, musicplayer *musicplayer.MusicPlayer, soundplayer *soundplayer.SoundPlayer, renderer *sdl.Renderer) *OptionsScreen {
 
 	o := &OptionsScreen{}
 
@@ -53,6 +55,8 @@ func NewOptionsScreen(winWidth, winHeight, winDepth int, gamestate *gamestatetra
 	o.MouseState = mousestate
 
 	o.MusicPlayer = musicplayer
+
+	o.SoundPlayer = soundplayer
 
 	o.WinWidth = winWidth
 	o.WinHeight = winHeight
@@ -269,7 +273,6 @@ func (o *OptionsScreen) Update(time float64) {
 			o.MusicPlayer.CurrentTune = 0
 		}
 		o.MusicPlayer.PlayTune(o.MusicPlayer.CurrentTune)
-		o.MusicPlayer.CurrentTune = o.MusicPlayer.CurrentTune
 	}
 
 	if o.TuneDownButton.WasLeftClicked == true {
@@ -278,15 +281,16 @@ func (o *OptionsScreen) Update(time float64) {
 			o.MusicPlayer.CurrentTune = o.MusicPlayer.NumTunes - 1
 		}
 		o.MusicPlayer.PlayTune(o.MusicPlayer.CurrentTune)
-		o.MusicPlayer.CurrentTune = o.MusicPlayer.CurrentTune
 	}
 
-	// Set volumes when appropriate button is clicked
+	// Set sound volume when appropriate button is clicked
 	if o.SoundVolumeUpButton.WasLeftClicked == true {
 		o.SoundVolume += 10
 		if o.SoundVolume > 100 {
 			o.SoundVolume = 100
 		}
+		o.SoundPlayer.SetVolume(o.SoundVolume)
+		o.SoundPlayer.PlaySound("break1")
 	}
 
 	if o.SoundVolumeDownButton.WasLeftClicked == true {
@@ -294,8 +298,11 @@ func (o *OptionsScreen) Update(time float64) {
 		if o.SoundVolume < 0 {
 			o.SoundVolume = 0
 		}
+		o.SoundPlayer.SetVolume(o.SoundVolume)
+		o.SoundPlayer.PlaySound("break1")
 	}
 
+	// Set music volume when appropriate button is clicked
 	if o.MusicVolumeUpButton.WasLeftClicked == true {
 		o.MusicVolume += 10
 		if o.MusicVolume > 100 {

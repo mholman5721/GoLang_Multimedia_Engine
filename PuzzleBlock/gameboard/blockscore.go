@@ -85,6 +85,7 @@ func (g *GameBoard) HandleScoreBlocks(score int) {
 				if g.BlockStates[k][l] == Exploding {
 					g.BlockStates[k][l] = Empty
 					g.Blocks[k][g.BlockStatesToGameBoard(l)].MainSprite.Drawing = false
+					g.SoundPlayer.PlaySound("break1")
 					for o := range g.Blocks[k][g.BlockStatesToGameBoard(l)].ExplosionSprites {
 						g.Blocks[k][g.BlockStatesToGameBoard(l)].ExplosionSprites[o].MainSprite.Vel.X = float32(rand.Intn(3)-1) / float32(rand.Intn(8)+1)
 						g.Blocks[k][g.BlockStatesToGameBoard(l)].ExplosionSprites[o].MainSprite.Vel.Y = float32(rand.Intn(3)-1) / float32(rand.Intn(8)+1)

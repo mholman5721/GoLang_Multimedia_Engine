@@ -4,6 +4,7 @@ import (
 	"golang-games/PuzzleBlock/font"
 	"golang-games/PuzzleBlock/gamestatetransition"
 	"golang-games/PuzzleBlock/musicplayer"
+	"golang-games/PuzzleBlock/soundplayer"
 	"golang-games/PuzzleBlock/sprite"
 	"math/rand"
 	"strconv"
@@ -13,13 +14,15 @@ import (
 )
 
 // NewGameBoard is a gameboard constructor
-func NewGameBoard(winWidth, winHeight, winDepth int, gamestate *gamestatetransition.GameStateTransition, numAcross, numDown, playAreaStart, playAreaEnd int, musicplayer *musicplayer.MusicPlayer, renderer *sdl.Renderer) *GameBoard {
+func NewGameBoard(winWidth, winHeight, winDepth int, gamestate *gamestatetransition.GameStateTransition, numAcross, numDown, playAreaStart, playAreaEnd int, musicplayer *musicplayer.MusicPlayer, soundplayer *soundplayer.SoundPlayer, renderer *sdl.Renderer) *GameBoard {
 
 	g := &GameBoard{}
 
 	g.CurrentGameState = gamestate
 
 	g.MusicPlayer = musicplayer
+
+	g.SoundPlayer = soundplayer
 
 	g.Blocks = make([][]Block, numDown)
 

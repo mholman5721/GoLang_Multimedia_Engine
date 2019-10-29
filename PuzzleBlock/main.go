@@ -89,7 +89,7 @@ func main() {
 	gameStateTransition := gamestatetransition.NewGameStateTransition(WinWidth, WinHeight, m, gamestate.StartUp, gamestate.TitleScreen, gamestate.StartUp, 500, renderer)
 
 	// Initialize gameboard
-	g := gameboard.NewGameBoard(WinWidth, WinHeight, WinDepth, gameStateTransition, 19, 10, 7, 12, m, renderer)
+	g := gameboard.NewGameBoard(WinWidth, WinHeight, WinDepth, gameStateTransition, 19, 10, 7, 12, m, s, renderer)
 
 	// Main game loop
 	for {
@@ -121,14 +121,14 @@ func main() {
 			m.PastTune = 1
 			m.SetVolume(50)
 			m.PlayTune(0)
+			s.SetVolume(50)
 			window.SetTitle("Loading..")
-			t = titlescreen.NewTitleScreen(WinWidth, WinHeight, WinDepth, 10, gameStateTransition, mouseState, m, renderer)
+			t = titlescreen.NewTitleScreen(WinWidth, WinHeight, WinDepth, 10, gameStateTransition, mouseState, m, s, renderer)
 			window.SetTitle("Loading...")
 			o = optionsscreen.NewOptionsScreen(WinWidth, WinHeight, WinDepth, gameStateTransition, mouseState, m, s, renderer)
 			window.SetTitle("Loading.")
-			window.SetTitle("Loading..")
 			gameStateTransition.TransitioningDown = true
-			window.SetTitle("Loading...")
+			window.SetTitle("Loading..")
 			gameStateTransition.CurrentGameState = gamestate.TitleScreen
 			window.SetTitle("PuzzleBlock")
 			gameStateTransition.TransitionTimer = 0

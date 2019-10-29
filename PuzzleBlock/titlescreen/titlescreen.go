@@ -6,6 +6,7 @@ import (
 	"golang-games/PuzzleBlock/gamestatetransition"
 	"golang-games/PuzzleBlock/guicontrols"
 	"golang-games/PuzzleBlock/musicplayer"
+	"golang-games/PuzzleBlock/soundplayer"
 	"golang-games/PuzzleBlock/sprite"
 	"math/rand"
 	"vec3"
@@ -18,6 +19,7 @@ type TitleScreen struct {
 	CurrentGameState *gamestatetransition.GameStateTransition
 	MouseState       *guicontrols.MouseState
 	MusicPlayer      *musicplayer.MusicPlayer
+	SoundPlayer      *soundplayer.SoundPlayer
 	WinWidth         int
 	WinHeight        int
 	Blocks           []*sprite.Sprite
@@ -30,7 +32,7 @@ type TitleScreen struct {
 }
 
 // NewTitleScreen is a title screen constructor
-func NewTitleScreen(winWidth, winHeight, winDepth, numBlocks int, gamestate *gamestatetransition.GameStateTransition, mousestate *guicontrols.MouseState, musicplayer *musicplayer.MusicPlayer, renderer *sdl.Renderer) *TitleScreen {
+func NewTitleScreen(winWidth, winHeight, winDepth, numBlocks int, gamestate *gamestatetransition.GameStateTransition, mousestate *guicontrols.MouseState, musicplayer *musicplayer.MusicPlayer, soundplayer *soundplayer.SoundPlayer, renderer *sdl.Renderer) *TitleScreen {
 
 	t := &TitleScreen{}
 
@@ -39,6 +41,8 @@ func NewTitleScreen(winWidth, winHeight, winDepth, numBlocks int, gamestate *gam
 	t.MouseState = mousestate
 
 	t.MusicPlayer = musicplayer
+
+	t.SoundPlayer = soundplayer
 
 	t.WinWidth = winWidth
 	t.WinHeight = winHeight

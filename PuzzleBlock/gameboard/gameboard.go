@@ -5,6 +5,7 @@ import (
 	"golang-games/PuzzleBlock/gamestate"
 	"golang-games/PuzzleBlock/gamestatetransition"
 	"golang-games/PuzzleBlock/musicplayer"
+	"golang-games/PuzzleBlock/soundplayer"
 	"golang-games/PuzzleBlock/sprite"
 	"math/rand"
 	"strconv"
@@ -55,6 +56,7 @@ type Block struct {
 type GameBoard struct {
 	CurrentGameState           *gamestatetransition.GameStateTransition
 	MusicPlayer                *musicplayer.MusicPlayer
+	SoundPlayer                *soundplayer.SoundPlayer
 	Blocks                     [][]Block
 	Background                 *sprite.Sprite
 	LevelValue                 int

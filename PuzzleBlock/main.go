@@ -82,7 +82,7 @@ func main() {
 	m := musicplayer.NewMusicPlayer("assets/tune", 4)
 
 	// SoundPlayer variable
-	sounds := []string{"break1"}
+	sounds := []string{"break1", "break2", "break3", "break4", "break5"}
 	s := soundplayer.NewSoundPlayer(sounds)
 
 	// Initialize GameState

@@ -1,6 +1,9 @@
 package gameboard
 
-import "math/rand"
+import (
+	"math/rand"
+	"strconv"
+)
 
 // CheckScore checks the gameboard for scores in rows columns and diagonals
 func (g *GameBoard) CheckScore(direction string, originalBlock, nextBlock Pos, score int) int {
@@ -79,13 +82,14 @@ func (g *GameBoard) HandleScoreBlocks(score int) {
 	if score >= 3 {
 		g.BlockScorePausing = true
 		g.LevelFallingTimer = 0
-		//fmt.Println("~~~~~SCORE: ", score)
+		g.SoundPlayer.PlaySound("break" + strconv.Itoa(1+rand.Intn(2)))
+		g.SoundPlayer.PlaySound("break" + strconv.Itoa(2+rand.Intn(2)))
+		g.SoundPlayer.PlaySound("break" + strconv.Itoa(3+rand.Intn(3)))
 		for k := range g.BlockStates {
 			for l := range g.BlockStates[k] {
 				if g.BlockStates[k][l] == Exploding {
 					g.BlockStates[k][l] = Empty
 					g.Blocks[k][g.BlockStatesToGameBoard(l)].MainSprite.Drawing = false
-					g.SoundPlayer.PlaySound("break1")
 					for o := range g.Blocks[k][g.BlockStatesToGameBoard(l)].ExplosionSprites {
 						g.Blocks[k][g.BlockStatesToGameBoard(l)].ExplosionSprites[o].MainSprite.Vel.X = float32(rand.Intn(3)-1) / float32(rand.Intn(8)+1)
 						g.Blocks[k][g.BlockStatesToGameBoard(l)].ExplosionSprites[o].MainSprite.Vel.Y = float32(rand.Intn(3)-1) / float32(rand.Intn(8)+1)

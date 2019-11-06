@@ -45,6 +45,7 @@ func (g *GameBoard) CheckScore(direction string, originalBlock, nextBlock Pos, s
 	if g.Blocks[originalBlock.Y][g.BlockStatesToGameBoard(originalBlock.X)].MainSprite.CSequence == g.Blocks[nextBlock.Y][g.BlockStatesToGameBoard(nextBlock.X)].MainSprite.CSequence &&
 		g.Blocks[originalBlock.Y][g.BlockStatesToGameBoard(originalBlock.X)].MainSprite.CSequence != 6 &&
 		g.Blocks[nextBlock.Y][g.BlockStatesToGameBoard(nextBlock.X)].MainSprite.CSequence != 6 &&
+		g.Blocks[nextBlock.Y][g.BlockStatesToGameBoard(originalBlock.X)].MainSprite.CSequence != 5 &&
 		g.Blocks[nextBlock.Y][g.BlockStatesToGameBoard(nextBlock.X)].MainSprite.CSequence != 5 &&
 		g.Blocks[nextBlock.Y][g.BlockStatesToGameBoard(nextBlock.X)].MainSprite.Drawing == true &&
 		g.BlockStates[nextBlock.Y][nextBlock.X] == Inactive {
@@ -82,9 +83,7 @@ func (g *GameBoard) HandleScoreBlocks(score int) {
 	if score >= 3 {
 		g.BlockScorePausing = true
 		g.LevelFallingTimer = 0
-		g.SoundPlayer.PlaySound("break" + strconv.Itoa(1+rand.Intn(2)))
-		g.SoundPlayer.PlaySound("break" + strconv.Itoa(2+rand.Intn(2)))
-		g.SoundPlayer.PlaySound("break" + strconv.Itoa(3+rand.Intn(3)))
+		g.SoundPlayer.PlaySound("break" + strconv.Itoa(1+rand.Intn(5)))
 		for k := range g.BlockStates {
 			for l := range g.BlockStates[k] {
 				if g.BlockStates[k][l] == Exploding {
@@ -108,12 +107,19 @@ func (g *GameBoard) HandleScoreBlocks(score int) {
 				}
 			}
 		}
-	} else {
+	} /*else {
 		for n := range g.BlockStates {
 			for m := range g.BlockStates[n] {
 				if g.BlockStates[n][m] == Exploding {
 					g.BlockStates[n][m] = Inactive
 				}
+			}
+		}
+	}*/
+	for n := range g.BlockStates {
+		for m := range g.BlockStates[n] {
+			if g.Blocks[n][g.BlockStatesToGameBoard(m)].MainSprite.Drawing == true && g.BlockStates[n][m] != Inactive && g.BlockStates[n][m] != Active {
+				g.BlockStates[n][m] = Inactive
 			}
 		}
 	}

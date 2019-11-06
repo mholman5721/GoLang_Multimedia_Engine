@@ -8,6 +8,7 @@ import (
 	"golang-games/PuzzleBlock/musicplayer"
 	"golang-games/PuzzleBlock/soundplayer"
 	"golang-games/PuzzleBlock/sprite"
+	"math/rand"
 	"strconv"
 	"vec3"
 
@@ -290,7 +291,7 @@ func (o *OptionsScreen) Update(time float64) {
 			o.SoundVolume = 100
 		}
 		o.SoundPlayer.SetVolume(o.SoundVolume)
-		o.SoundPlayer.PlaySound("break1")
+		o.SoundPlayer.PlaySound("break" + strconv.Itoa(1+rand.Intn(5)))
 	}
 
 	if o.SoundVolumeDownButton.WasLeftClicked == true {
@@ -299,7 +300,7 @@ func (o *OptionsScreen) Update(time float64) {
 			o.SoundVolume = 0
 		}
 		o.SoundPlayer.SetVolume(o.SoundVolume)
-		o.SoundPlayer.PlaySound("break1")
+		o.SoundPlayer.PlaySound("break" + strconv.Itoa(1+rand.Intn(5)))
 	}
 
 	// Set music volume when appropriate button is clicked

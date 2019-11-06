@@ -6,38 +6,38 @@ import (
 )
 
 // CheckScore checks the gameboard for scores in rows columns and diagonals
-func (g *GameBoard) CheckScore(direction string, originalBlock, nextBlock Pos, score int) int {
+func (g *GameBoard) CheckScore(direction string, originalBlock, nextBlock Pos) {
 
 	switch direction {
 	case "up":
 		// Not needed
 	case "down":
 		if nextBlock.Y > (g.NumDown - 1) {
-			return score
+			return
 		}
 	case "left":
 		if nextBlock.X < 0 {
-			return score
+			return
 		}
 	case "right":
 		if nextBlock.X > (g.PlayAreaEnd-g.PlayAreaStart)-1 {
-			return score
+			return
 		}
 	case "up_left":
 		if nextBlock.X < 0 || nextBlock.Y < 0 {
-			return score
+			return
 		}
 	case "up_right":
 		if nextBlock.X > (g.PlayAreaEnd-g.PlayAreaStart)-1 || nextBlock.Y < 0 {
-			return score
+			return
 		}
 	case "down_left":
 		if nextBlock.X < 0 || nextBlock.Y > (g.NumDown-1) {
-			return score
+			return
 		}
 	case "down_right":
 		if nextBlock.X > (g.PlayAreaEnd-g.PlayAreaStart)-1 || nextBlock.Y > (g.NumDown-1) {
-			return score
+			return
 		}
 	default:
 	}
@@ -50,7 +50,7 @@ func (g *GameBoard) CheckScore(direction string, originalBlock, nextBlock Pos, s
 		g.Blocks[nextBlock.Y][g.BlockStatesToGameBoard(nextBlock.X)].MainSprite.Drawing == true &&
 		g.BlockStates[nextBlock.Y][nextBlock.X] == Inactive {
 
-		score++
+		g.BlocksForScore++
 		g.BlockStates[originalBlock.Y][originalBlock.X] = Exploding
 		g.BlockStates[nextBlock.Y][nextBlock.X] = Exploding
 
@@ -58,32 +58,31 @@ func (g *GameBoard) CheckScore(direction string, originalBlock, nextBlock Pos, s
 		case "up":
 			// Not needed
 		case "down":
-			score += g.CheckScore("down", originalBlock, Pos{nextBlock.X, nextBlock.Y + 1}, score)
+			g.CheckScore("down", originalBlock, Pos{nextBlock.X, nextBlock.Y + 1})
 		case "left":
-			score += g.CheckScore("left", originalBlock, Pos{nextBlock.X - 1, nextBlock.Y}, score)
+			g.CheckScore("left", originalBlock, Pos{nextBlock.X - 1, nextBlock.Y})
 		case "right":
-			score += g.CheckScore("right", originalBlock, Pos{nextBlock.X + 1, nextBlock.Y}, score)
+			g.CheckScore("right", originalBlock, Pos{nextBlock.X + 1, nextBlock.Y})
 		case "up_left":
-			score += g.CheckScore("up_left", originalBlock, Pos{nextBlock.X - 1, nextBlock.Y - 1}, score)
+			g.CheckScore("up_left", originalBlock, Pos{nextBlock.X - 1, nextBlock.Y - 1})
 		case "up_right":
-			score += g.CheckScore("up_right", originalBlock, Pos{nextBlock.X + 1, nextBlock.Y - 1}, score)
+			g.CheckScore("up_right", originalBlock, Pos{nextBlock.X + 1, nextBlock.Y - 1})
 		case "down_left":
-			score += g.CheckScore("down_left", originalBlock, Pos{nextBlock.X - 1, nextBlock.Y + 1}, score)
+			g.CheckScore("down_left", originalBlock, Pos{nextBlock.X - 1, nextBlock.Y + 1})
 		case "down_right":
-			score += g.CheckScore("down_right", originalBlock, Pos{nextBlock.X + 1, nextBlock.Y + 1}, score)
+			g.CheckScore("down_right", originalBlock, Pos{nextBlock.X + 1, nextBlock.Y + 1})
 		default:
 		}
 	}
-
-	return score
 }
 
 // HandleScoreBlocks contains the logic for what should happen to blocks after they are marked by the CheckScore functions
-func (g *GameBoard) HandleScoreBlocks(score int) {
-	if score >= 3 {
+func (g *GameBoard) HandleScoreBlocks() {
+	if g.BlocksForScore >= 2 {
 		g.BlockScorePausing = true
 		g.LevelFallingTimer = 0
 		g.SoundPlayer.PlaySound("break" + strconv.Itoa(1+rand.Intn(5)))
+		g.DeGrayValue--
 		for k := range g.BlockStates {
 			for l := range g.BlockStates[k] {
 				if g.BlockStates[k][l] == Exploding {
@@ -98,24 +97,15 @@ func (g *GameBoard) HandleScoreBlocks(score int) {
 						if g.ScoreValue+g.BlockPointValue < g.MaxScoreValue {
 							g.ScoreValue += g.BlockPointValue
 							g.LevelScoreValue += g.BlockPointValue
-							g.DeGrayValue--
 						} else {
 							g.ScoreValue = g.MaxScoreValue
-							g.DeGrayValue--
 						}
 					}
 				}
 			}
 		}
-	} /*else {
-		for n := range g.BlockStates {
-			for m := range g.BlockStates[n] {
-				if g.BlockStates[n][m] == Exploding {
-					g.BlockStates[n][m] = Inactive
-				}
-			}
-		}
-	}*/
+	}
+
 	for n := range g.BlockStates {
 		for m := range g.BlockStates[n] {
 			if g.Blocks[n][g.BlockStatesToGameBoard(m)].MainSprite.Drawing == true && g.BlockStates[n][m] != Inactive && g.BlockStates[n][m] != Active {
@@ -123,4 +113,6 @@ func (g *GameBoard) HandleScoreBlocks(score int) {
 			}
 		}
 	}
+
+	g.BlocksForScore = 0
 }

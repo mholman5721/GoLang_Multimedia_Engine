@@ -101,6 +101,7 @@ type GameBoard struct {
 	GameOverTimer              float64
 	GameOverPausing            bool
 	BlockScorePausing          bool
+	BlocksForScore             int
 }
 
 // GameBoardToBlockStates translates an x coordinate in the play area to an x coordinate in the block states slice
@@ -206,7 +207,6 @@ func (g *GameBoard) Update(time float64) {
 	}
 
 	// Check for block scores
-	score := 0
 	for j := range g.BlockStates {
 		for i := range g.BlockStates[j] {
 			if g.BlockStates[j][i] == Inactive && g.Blocks[j][g.BlockStatesToGameBoard(i)].MainSprite.Drawing == true {
@@ -223,40 +223,33 @@ func (g *GameBoard) Update(time float64) {
 
 				}
 
-				score += g.CheckScore("down", Pos{i, j}, Pos{i, j + 1}, score)
-				//fmt.Println("Down SCORE: ", score)
-				g.HandleScoreBlocks(score)
-				score = 0
+				g.CheckScore("down", Pos{i, j}, Pos{i, j + 1})
+				//fmt.Println("down g.BlocksForScore: ", g.BlocksForScore)
+				g.HandleScoreBlocks()
 
-				score += g.CheckScore("left", Pos{i, j}, Pos{i - 1, j}, score)
-				//fmt.Println("Left SCORE: ", score)
-				g.HandleScoreBlocks(score)
-				score = 0
+				g.CheckScore("left", Pos{i, j}, Pos{i - 1, j})
+				//fmt.Println("left g.BlocksForScore: ", g.BlocksForScore)
+				g.HandleScoreBlocks()
 
-				score += g.CheckScore("right", Pos{i, j}, Pos{i + 1, j}, score)
-				//fmt.Println("Right SCORE: ", score)
-				g.HandleScoreBlocks(score)
-				score = 0
+				g.CheckScore("right", Pos{i, j}, Pos{i + 1, j})
+				//fmt.Println("right g.BlocksForScore: ", g.BlocksForScore)
+				g.HandleScoreBlocks()
 
-				score += g.CheckScore("up_left", Pos{i, j}, Pos{i - 1, j - 1}, score)
-				//fmt.Println("Right SCORE: ", score)
-				g.HandleScoreBlocks(score)
-				score = 0
+				g.CheckScore("up_left", Pos{i, j}, Pos{i - 1, j - 1})
+				//fmt.Println("up_left g.BlocksForScore: ", g.BlocksForScore)
+				g.HandleScoreBlocks()
 
-				score += g.CheckScore("up_right", Pos{i, j}, Pos{i + 1, j - 1}, score)
-				//fmt.Println("Right SCORE: ", score)
-				g.HandleScoreBlocks(score)
-				score = 0
+				g.CheckScore("up_right", Pos{i, j}, Pos{i + 1, j - 1})
+				//fmt.Println("up_right g.BlocksForScore: ", g.BlocksForScore)
+				g.HandleScoreBlocks()
 
-				score += g.CheckScore("down_left", Pos{i, j}, Pos{i - 1, j + 1}, score)
-				//fmt.Println("Right SCORE: ", score)
-				g.HandleScoreBlocks(score)
-				score = 0
+				g.CheckScore("down_left", Pos{i, j}, Pos{i - 1, j + 1})
+				//fmt.Println("down_left g.BlocksForScore: ", g.BlocksForScore)
+				g.HandleScoreBlocks()
 
-				score += g.CheckScore("down_right", Pos{i, j}, Pos{i + 1, j + 1}, score)
-				//fmt.Println("Right SCORE: ", score)
-				g.HandleScoreBlocks(score)
-				score = 0
+				g.CheckScore("down_right", Pos{i, j}, Pos{i + 1, j + 1})
+				//fmt.Println("down_right g.BlocksForScore: ", g.BlocksForScore)
+				g.HandleScoreBlocks()
 			}
 		}
 	}

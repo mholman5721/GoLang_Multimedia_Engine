@@ -279,5 +279,7 @@ func NewGameBoard(winWidth, winHeight, winDepth int, gamestate *gamestatetransit
 	g.GameOverPausing = false
 	g.BlockScorePausing = false
 
+	g.BlocksForScore = 0
+
 	return g
 }

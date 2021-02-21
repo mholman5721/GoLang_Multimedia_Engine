@@ -1,7 +1,7 @@
 package font
 
 import (
-	"vec3"
+	"golang-games/PuzzleBlock/vec3"
 
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"

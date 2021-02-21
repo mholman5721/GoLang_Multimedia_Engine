@@ -1,7 +1,7 @@
 package sprite
 
 import (
-	"vec3"
+	"golang-games/PuzzleBlock/vec3"
 
 	"github.com/veandco/go-sdl2/img"
 	"github.com/veandco/go-sdl2/sdl"

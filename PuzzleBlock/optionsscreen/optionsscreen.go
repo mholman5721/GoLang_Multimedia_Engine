@@ -8,9 +8,9 @@ import (
 	"golang-games/PuzzleBlock/musicplayer"
 	"golang-games/PuzzleBlock/soundplayer"
 	"golang-games/PuzzleBlock/sprite"
+	"golang-games/PuzzleBlock/vec3"
 	"math/rand"
 	"strconv"
-	"vec3"
 
 	"github.com/veandco/go-sdl2/sdl"
 )

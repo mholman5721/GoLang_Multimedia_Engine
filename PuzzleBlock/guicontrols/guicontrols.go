@@ -4,7 +4,7 @@ import (
 	"golang-games/PuzzleBlock/font"
 	"golang-games/PuzzleBlock/sprite"
 	"golang-games/PuzzleBlock/texturedrawing"
-	"vec3"
+	"golang-games/PuzzleBlock/vec3"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
